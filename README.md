@@ -26,5 +26,6 @@ The server uses PostgreSQL. Ensure your `.env` file has the following variables:
 
 - `GET /health`: Server health check.
 - `GET /db-test`: Database connectivity test.
+- `GET /get-all-constructors`: Fetches all constructors from the local database.
 - `GET /constructors`: Fetches the 2026 constructor standings from Ergast API.
 # pitwall-backend

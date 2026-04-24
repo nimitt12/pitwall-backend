@@ -1,4 +1,5 @@
 const axios = require('axios');
+const db = require('../../config/database');
 
 /**
  * Fetches 2026 constructor standings from Ergast API
@@ -9,6 +10,16 @@ const getConstructorStandings = async () => {
     return response.data;
 };
 
+/**
+ * Fetches all constructors from the local database
+ * @returns {Promise<Array>}
+ */
+const getAllConstructorsFromDb = async () => {
+    const result = await db.query('SELECT * FROM constructors ORDER BY id ASC');
+    return result.rows;
+};
+
 module.exports = {
-    getConstructorStandings
+    getConstructorStandings,
+    getAllConstructorsFromDb
 };

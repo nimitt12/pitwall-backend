@@ -3,6 +3,8 @@ const router = express.Router();
 const constructorRoutes = require('./constructorRoutes');
 const db = require('../../config/database');
 
+const constructorController = require('../controllers/constructorController');
+
 // Health check route
 router.get('/health', (req, res) => {
     res.json({ status: 'UP', timestamp: new Date().toISOString() });
