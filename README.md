@@ -17,7 +17,14 @@ A simple Express server to fetch F1 data.
    npm start
    ```
 
+## Database Setup
+
+The server uses PostgreSQL. Ensure your `.env` file has the following variables:
+- `PG_USER`, `PG_PASSWORD`, `PG_HOST`, `PG_DATABASE`
+
 ## API Routes
 
+- `GET /health`: Server health check.
+- `GET /db-test`: Database connectivity test.
 - `GET /constructors`: Fetches the 2026 constructor standings from Ergast API.
 # pitwall-backend
