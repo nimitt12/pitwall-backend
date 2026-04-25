@@ -33,6 +33,8 @@ The server uses PostgreSQL. Ensure your `.env` file has the following variables:
 - `GET /get-all-drivers`: Fetches all drivers from the local database.
 - `GET /drivers/sync-driver-season`: Syncs driver season data from external API.
 - `GET /drivers/get-all-drivers-season-rankings`: Fetches driver rankings with names.
+- `GET /results/sync-results`: Syncs race results from external API.
+- `GET /results/get-all-results/:season/:round`: Fetches race results for a specific season and round.
 - `GET /get-all-constructors-season-rankings`: Fetches constructor rankings with names.
 - `GET /constructors`: Fetches the 2026 constructor standings from Ergast API.
 # pitwall-backend

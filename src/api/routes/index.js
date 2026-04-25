@@ -2,10 +2,12 @@ const express = require('express');
 const router = express.Router();
 const constructorRoutes = require('./constructorRoutes');
 const driverRoutes = require('./driverRoutes');
+const resultRoutes = require('./resultRoutes');
 const db = require('../../config/database');
 
 const constructorController = require('../controllers/constructorController');
 const driverController = require('../controllers/driverController');
+const resultController = require('../controllers/resultController');
 
 // Health check route
 router.get('/health', (req, res) => {
@@ -37,5 +39,6 @@ router.get('/db-test', async (req, res) => {
 // Aggregate all API routes
 router.use('/constructors', constructorRoutes);
 router.use('/drivers', driverRoutes);
+router.use('/results', resultRoutes);
 
 module.exports = router;
