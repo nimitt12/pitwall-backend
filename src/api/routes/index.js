@@ -1,14 +1,19 @@
 const express = require('express');
 const router = express.Router();
 const constructorRoutes = require('./constructorRoutes');
+const driverRoutes = require('./driverRoutes');
 const db = require('../../config/database');
 
 const constructorController = require('../controllers/constructorController');
+const driverController = require('../controllers/driverController');
 
 // Health check route
 router.get('/health', (req, res) => {
     res.json({ status: 'UP', timestamp: new Date().toISOString() });
 });
+
+// GET all drivers from DB
+router.get('/get-all-drivers', driverController.getAllDbDrivers);
 
 // Database connectivity test route
 router.get('/db-test', async (req, res) => {
@@ -31,5 +36,6 @@ router.get('/db-test', async (req, res) => {
 
 // Aggregate all API routes
 router.use('/constructors', constructorRoutes);
+router.use('/drivers', driverRoutes);
 
 module.exports = router;
