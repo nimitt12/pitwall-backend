@@ -30,7 +30,23 @@ const getAllDbConstructors = async (req, res) => {
     }
 };
 
+/**
+ * Controller to handle syncing constructor season table from external API
+ * @param {import('express').Request} req 
+ * @param {import('express').Response} res 
+ */
+const syncConstructorSeason = async (req, res) => {
+    try {
+        const data = await constructorService.syncConstructorSeason();
+        res.json(data);
+    } catch (error) {
+        console.error('Error in syncConstructorSeason controller:', error.message);
+        res.status(500).json({ error: 'Failed to sync constructor season' });
+    }
+};
+
 module.exports = {
     getConstructors,
-    getAllDbConstructors
+    getAllDbConstructors,
+    syncConstructorSeason
 };
