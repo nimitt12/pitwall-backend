@@ -12,9 +12,13 @@ A simple Express server to fetch F1 data.
    ```bash
    npm install
    ```
-3. Start the server:
+3. Start the server (Production):
    ```bash
    npm start
+   ```
+4. Start the server (Development with auto-reload):
+   ```bash
+   npm run dev
    ```
 
 ## Database Setup
