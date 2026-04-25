@@ -35,7 +35,7 @@ const syncDriverSeason = async () => {
             // Using lowercase family name as a safe key for mapping
             const familyName = d.family_name.toLowerCase().replace(/ /g, '_');
             driverMap[familyName] = d.id;
-            
+
             // Special cases mapping if any (e.g. "bearman" -> "bearman", "antonelli" -> "antonelli")
             // The API driverId is usually the family name
         });
@@ -98,9 +98,10 @@ const syncDriverSeason = async () => {
 const getAllDriversSeasonRankingsFromDb = async () => {
     try {
         const result = await db.query(`
-            SELECT ds.*, d.given_name, d.family_name, d.code, d.number, d.nationality 
-            FROM drivers_season ds 
-            JOIN drivers d ON ds.driver_id = d.id 
+            SELECT ds.*, d.given_name, d.family_name, d.code, d.number, d.nationality, c.name as constructor_name
+            FROM drivers_season ds
+            JOIN drivers d ON ds.driver_id = d.id
+            LEFT JOIN constructors c ON d.constructor_id = c.id
             ORDER BY season DESC, CAST(points AS NUMERIC) DESC`);
         return result.rows;
     } catch (error) {
