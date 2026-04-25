@@ -101,8 +101,24 @@ const syncConstructorSeason = async () => {
     }
 };
 
+// get all constructors season rankings from DB
+const getAllConstructorsSeasonRankingsFromDb = async () => {
+    try {
+        const result = await db.query(`
+            SELECT cs.*, c.name 
+            FROM constructors_season cs 
+            JOIN constructors c ON cs.constructors_id = c.id::integer
+            ORDER BY season DESC, points DESC`);
+        return result.rows;
+    } catch (error) {
+        console.error('Error fetching constructors season rankings from database:', error.message);
+        throw error;
+    }
+};
+
 module.exports = {
     getConstructorStandings,
     getAllConstructorsFromDb,
-    syncConstructorSeason
+    syncConstructorSeason,
+    getAllConstructorsSeasonRankingsFromDb
 };

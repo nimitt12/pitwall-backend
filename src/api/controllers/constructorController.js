@@ -45,8 +45,24 @@ const syncConstructorSeason = async (req, res) => {
     }
 };
 
+/**
+ * Controller to handle fetching all constructors season rankings from DB
+ * @param {import('express').Request} req 
+ * @param {import('express').Response} res 
+ */
+const getAllDbConstructorsSeasonRankings = async (req, res) => {
+    try {
+        const constructorsSeasonRankings = await constructorService.getAllConstructorsSeasonRankingsFromDb();
+        res.json(constructorsSeasonRankings);
+    } catch (error) {
+        console.error('Error in getAllDbConstructorsSeasonRankings controller:', error.message);
+        res.status(500).json({ error: 'Failed to fetch constructors season rankings from database' });
+    }
+};
+
 module.exports = {
     getConstructors,
     getAllDbConstructors,
-    syncConstructorSeason
+    syncConstructorSeason,
+    getAllDbConstructorsSeasonRankings
 };
