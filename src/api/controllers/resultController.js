@@ -31,7 +31,24 @@ const getResultsBySeasonAndRound = async (req, res) => {
     }
 };
 
+/**
+ * Controller to handle fetching statistics overall for ticker
+ * @param {import('express').Request} req 
+ * @param {import('express').Response} res 
+ */
+const getStatsOverall = async (req, res) => {
+    try {
+        const { season } = req.params;
+        const stats = await resultService.getStatsOverallFromDb(season);
+        res.json(stats);
+    } catch (error) {
+        console.error('Error in getStatsOverall controller:', error.message);
+        res.status(500).json({ error: 'Failed to fetch statistics from database' });
+    }
+};
+
 module.exports = {
     syncResults,
-    getResultsBySeasonAndRound
+    getResultsBySeasonAndRound,
+    getStatsOverall
 };

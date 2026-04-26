@@ -32,12 +32,10 @@ const syncDriverSeason = async () => {
         const driverMap = {};
 
         localDrivers.forEach(d => {
-            // Using lowercase family name as a safe key for mapping
-            const familyName = d.family_name.toLowerCase().replace(/ /g, '_');
-            driverMap[familyName] = d.id;
-
-            // Special cases mapping if any (e.g. "bearman" -> "bearman", "antonelli" -> "antonelli")
-            // The API driverId is usually the family name
+            // Using driver code (e.g., 'ANT', 'RUS') for more reliable mapping
+            if (d.code) {
+                driverMap[d.code.toUpperCase()] = d.id;
+            }
         });
 
         // Insert or update drivers in the database
@@ -49,11 +47,11 @@ const syncDriverSeason = async () => {
         `;
 
         const values = driverStandings.map(item => {
-            const apiSlug = item.Driver.driverId;
-            const dbId = driverMap[apiSlug];
+            const apiCode = item.Driver.code;
+            const dbId = driverMap[apiCode];
 
             if (!dbId) {
-                console.warn(`Warning: No mapping found for external driver ID: ${apiSlug}`);
+                console.warn(`Warning: No mapping found for external driver code: ${apiCode} (${item.Driver.familyName})`);
                 return null;
             }
 

@@ -17,7 +17,7 @@ const syncResults = async () => {
         while (hasMore) {
             const url = `https://api.jolpi.ca/ergast/f1/2026/results/?format=json&limit=${limit}&offset=${offset}`;
             console.log(`Syncing results: offset ${offset}, limit ${limit}...`);
-            
+
             const response = await axios.get(url);
             const mrData = response.data.MRData;
             const races = mrData.RaceTable.Races;
@@ -126,7 +126,80 @@ const getResultsBySeasonAndRoundFromDb = async (season, round) => {
     }
 };
 
+/**
+ * Fetches statistics overall for ticker from the database, including driver and constructor info
+ * @param {string} season
+ * @returns {Promise<Array>}
+ */
+const getStatsOverallFromDb = async (season) => {
+    try {
+
+        // get top driver for ticker
+        const driverQuery = `
+            SELECT
+                ds.points,
+                d.family_name
+            FROM drivers_season ds
+            LEFT JOIN drivers d ON ds.driver_id = d.id
+            WHERE ds.season = $1
+            ORDER BY ds.points DESC LIMIT 1;
+        `;
+        const driverResult = await db.query(driverQuery, [season]);
+
+        // get top constructor for ticker
+        const constructorQuery = `
+            SELECT
+                cs.points,
+                c.name
+            FROM constructors_season cs
+            LEFT JOIN constructors c ON cs.constructors_id = c.id::integer
+            WHERE cs.season = $1
+            ORDER BY cs.points DESC LIMIT 1;
+        `;
+        const constructorResult = await db.query(constructorQuery, [season]);
+
+        // get youngest driver
+        const youngestDriverQuery = `
+            select d.family_name, ds.points
+                from drivers d
+                INNER JOIN drivers_season ds ON d.id = ds.driver_id
+                ORDER BY d.dob DESC
+                LIMIT 1;
+        `;
+        const youngestDriverResult = await db.query(youngestDriverQuery);
+
+        // get maximum poles this season
+        const polesQuery = `
+            SELECT driver_number, COUNT(*) AS pole_positions, d.family_name
+            FROM results
+            INNER JOIN drivers d on d.number = results.driver_number
+            WHERE season = $1 AND grid = '1'
+            GROUP BY driver_number, d,family_name
+            ORDER BY pole_positions DESC
+            LIMIT 1;
+        `;
+        const polesResult = await db.query(polesQuery, [season]);
+
+        const tickerData = {
+            topDriver: driverResult.rows[0].family_name,
+            topDriverPoints: driverResult.rows[0].points,
+            topConstructor: constructorResult.rows[0].name,
+            topConstructorPoints: constructorResult.rows[0].points,
+            youngestDriver: youngestDriverResult.rows[0].family_name,
+            youngestDriverPoints: youngestDriverResult.rows[0].points,
+            maxPoles: polesResult.rows[0].family_name,
+            maxPolesCount: polesResult.rows[0].pole_positions,
+        }
+
+        return tickerData;
+    } catch (error) {
+        console.error('Error fetching statistics from database:', error.message);
+        throw error;
+    }
+};
+
 module.exports = {
     syncResults,
-    getResultsBySeasonAndRoundFromDb
+    getResultsBySeasonAndRoundFromDb,
+    getStatsOverallFromDb
 };
