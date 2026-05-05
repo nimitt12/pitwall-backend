@@ -9,15 +9,53 @@ const constructorController = require('../controllers/constructorController');
 const driverController = require('../controllers/driverController');
 const resultController = require('../controllers/resultController');
 
-// Health check route
+/**
+ * @swagger
+ * /health:
+ *   get:
+ *     summary: Health check
+ *     description: Check if the API is running.
+ *     responses:
+ *       200:
+ *         description: API is healthy
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                 timestamp:
+ *                   type: string
+ */
 router.get('/health', (req, res) => {
     res.json({ status: 'UP', timestamp: new Date().toISOString() });
 });
 
-// GET all drivers from DB
+/**
+ * @swagger
+ * /get-all-drivers:
+ *   get:
+ *     summary: Get all drivers from database
+ *     description: Retrieve a list of all drivers stored in the local database.
+ *     responses:
+ *       200:
+ *         description: List of drivers
+ */
 router.get('/get-all-drivers', driverController.getAllDbDrivers);
 
-// Database connectivity test route
+/**
+ * @swagger
+ * /db-test:
+ *   get:
+ *     summary: Test database connection
+ *     description: Verify if the backend can connect to the PostgreSQL database.
+ *     responses:
+ *       200:
+ *         description: Connection successful
+ *       500:
+ *         description: Connection failed
+ */
 router.get('/db-test', async (req, res) => {
     try {
         const result = await db.query('SELECT NOW()');
