@@ -3,6 +3,7 @@ const router = express.Router();
 const constructorRoutes = require('./constructorRoutes');
 const driverRoutes = require('./driverRoutes');
 const resultRoutes = require('./resultRoutes');
+const authRoutes = require('./authRoutes');
 const db = require('../../config/database');
 
 const constructorController = require('../controllers/constructorController');
@@ -78,5 +79,6 @@ router.get('/db-test', async (req, res) => {
 router.use('/constructors', constructorRoutes);
 router.use('/drivers', driverRoutes);
 router.use('/results', resultRoutes);
+router.use('/auth', authRoutes);
 
 module.exports = router;
