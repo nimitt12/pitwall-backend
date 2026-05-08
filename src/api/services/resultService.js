@@ -198,8 +198,124 @@ const getStatsOverallFromDb = async (season) => {
     }
 };
 
+/**
+ * Syncs qualifying results from external API to local database
+ * @returns {Promise<Object>}
+ */
+const syncQualifying = async () => {
+    try {
+        let totalCount = 0;
+        let offset = 0;
+        const limit = 100; // Fetch 100 results per request
+        let hasMore = true;
+
+        await db.query('BEGIN');
+
+        while (hasMore) {
+            const url = `https://api.jolpi.ca/ergast/f1/2026/qualifying/?format=json&limit=${limit}&offset=${offset}`;
+            console.log(`Syncing qualifying results: offset ${offset}, limit ${limit}...`);
+
+            const response = await axios.get(url);
+            const mrData = response.data.MRData;
+            const races = mrData.RaceTable.Races;
+            const total = parseInt(mrData.total);
+
+            if (!races || races.length === 0) {
+                hasMore = false;
+                break;
+            }
+
+            const insertQuery = `
+                INSERT INTO qualifying (
+                    id, season, round, driver_number, position, q1, q2, q3
+                )
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                ON CONFLICT (id) DO UPDATE
+                SET 
+                    driver_number = EXCLUDED.driver_number,
+                    position = EXCLUDED.position,
+                    q1 = EXCLUDED.q1,
+                    q2 = EXCLUDED.q2,
+                    q3 = EXCLUDED.q3,
+                    updated_at = NOW()
+            `;
+
+            for (const race of races) {
+                const season = race.season;
+                const round = race.round;
+                const qualifyingResults = race.QualifyingResults;
+
+                for (const item of qualifyingResults) {
+                    const driverId = item.Driver.driverId;
+                    const id = `${season}_${round}_${driverId}`;
+
+                    const values = [
+                        id,
+                        season,
+                        round,
+                        item.number,
+                        item.position,
+                        item.Q1 || null,
+                        item.Q2 || null,
+                        item.Q3 || null
+                    ];
+
+                    await db.query(insertQuery, values);
+                    totalCount++;
+                }
+            }
+
+            offset += limit;
+            if (offset >= total) {
+                hasMore = false;
+            }
+        }
+
+        await db.query('COMMIT');
+
+        return {
+            success: true,
+            message: `Successfully synced ${totalCount} qualifying results`,
+            total: totalCount
+        };
+    } catch (error) {
+        console.error('Error syncing qualifying results:', error.message);
+        await db.query('ROLLBACK');
+        throw error;
+    }
+};
+
+/**
+ * Fetches qualifying results by season and round from the database, including driver and constructor info
+ * @param {string} season
+ * @param {string} round
+ * @returns {Promise<Array>}
+ */
+const getQualifyingBySeasonAndRoundFromDb = async (season, round) => {
+    try {
+        const query = `
+            SELECT 
+                q.*, 
+                d.given_name, d.family_name, d.code, d.nationality,
+                c.name as team_name
+            FROM qualifying q
+            LEFT JOIN drivers d ON q.driver_number = d.number
+            LEFT JOIN constructors c ON d.constructor_id = c.id
+            WHERE q.season = $1 AND q.round = $2
+            ORDER BY CAST(q.position AS INTEGER) ASC
+        `;
+        const result = await db.query(query, [season, round]);
+        return result.rows;
+    } catch (error) {
+        console.error('Error fetching qualifying results from database:', error.message);
+        throw error;
+    }
+};
+
 module.exports = {
     syncResults,
+    syncQualifying,
     getResultsBySeasonAndRoundFromDb,
+    getQualifyingBySeasonAndRoundFromDb,
     getStatsOverallFromDb
 };

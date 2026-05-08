@@ -47,8 +47,41 @@ const getStatsOverall = async (req, res) => {
     }
 };
 
+/**
+ * Controller to handle syncing qualifying results from external API
+ * @param {import('express').Request} req 
+ * @param {import('express').Response} res 
+ */
+const syncQualifying = async (req, res) => {
+    try {
+        const result = await resultService.syncQualifying();
+        res.json(result);
+    } catch (error) {
+        console.error('Error in syncQualifying controller:', error.message);
+        res.status(500).json({ error: 'Failed to sync qualifying results' });
+    }
+};
+
+/**
+ * Controller to handle fetching qualifying results by season and round from DB
+ * @param {import('express').Request} req 
+ * @param {import('express').Response} res 
+ */
+const getQualifyingBySeasonAndRound = async (req, res) => {
+    try {
+        const { season, round } = req.params;
+        const results = await resultService.getQualifyingBySeasonAndRoundFromDb(season, round);
+        res.json(results);
+    } catch (error) {
+        console.error('Error in getQualifyingBySeasonAndRound controller:', error.message);
+        res.status(500).json({ error: 'Failed to fetch qualifying results from database' });
+    }
+};
+
 module.exports = {
     syncResults,
+    syncQualifying,
     getResultsBySeasonAndRound,
+    getQualifyingBySeasonAndRound,
     getStatsOverall
 };
