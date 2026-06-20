@@ -4,6 +4,7 @@ const constructorRoutes = require('./constructorRoutes');
 const driverRoutes = require('./driverRoutes');
 const resultRoutes = require('./resultRoutes');
 const authRoutes = require('./authRoutes');
+const adminRoutes = require('./adminRoutes');
 const db = require('../../config/database');
 
 const constructorController = require('../controllers/constructorController');
@@ -80,5 +81,6 @@ router.use('/constructors', constructorRoutes);
 router.use('/drivers', driverRoutes);
 router.use('/results', resultRoutes);
 router.use('/auth', authRoutes);
+router.use('/admin', adminRoutes);
 
 module.exports = router;
