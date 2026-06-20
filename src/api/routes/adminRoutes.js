@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const adminController = require('../controllers/adminController');
+const adminAuth = require('../middlewares/adminAuthMiddleware');
 
 /**
  * @swagger
@@ -8,6 +9,27 @@ const adminController = require('../controllers/adminController');
  *   name: Admin
  *   description: Generic CRUD over whitelisted database tables (admin portal)
  */
+
+// Every admin endpoint requires a valid admin session.
+router.use(adminAuth);
+
+/**
+ * @swagger
+ * /admin/verify:
+ *   get:
+ *     summary: Verify the caller has admin access
+ *     tags: [Admin]
+ *     description: Used by the admin portal's gate screen to confirm the current session belongs to an admin before rendering the dashboard.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200: { description: "Authorized — returns the admin user" }
+ *       401: { description: Not authenticated }
+ *       403: { description: Authenticated but not an admin }
+ */
+router.get('/verify', (req, res) => {
+  res.json({ ok: true, user: req.adminUser });
+});
 
 /**
  * @swagger
