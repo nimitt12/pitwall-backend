@@ -22,7 +22,7 @@ class AuthService {
    */
   async register({ email, password, fullName }) {
     // Check if user already exists
-    const existingUser = await db.query('SELECT * FROM profiles WHERE email = $1', [email]);
+    const existingUser = await db.query('SELECT * FROM users WHERE email = $1', [email]);
     if (existingUser.rows.length > 0) {
       throw new Error('User with this email already exists');
     }
@@ -31,7 +31,7 @@ class AuthService {
     const id = Math.random().toString(36).substring(2, 15); // Simple ID generation, or use UUID
 
     const result = await db.query(
-      'INSERT INTO profiles (id, email, password, full_name) VALUES ($1, $2, $3, $4) RETURNING *',
+      'INSERT INTO users (id, email, password, full_name) VALUES ($1, $2, $3, $4) RETURNING *',
       [id, email, passwordHash, fullName]
     );
 
@@ -45,7 +45,7 @@ class AuthService {
    * Login with email and password
    */
   async login(email, password) {
-    const result = await db.query('SELECT * FROM profiles WHERE email = $1', [email]);
+    const result = await db.query('SELECT * FROM users WHERE email = $1', [email]);
     const user = result.rows[0];
 
     if (!user || !user.password) {
@@ -74,20 +74,20 @@ class AuthService {
       const { sub: googleId, email, name, picture } = payload;
 
       // Check if user exists
-      let result = await db.query('SELECT * FROM profiles WHERE email = $1', [email]);
+      let result = await db.query('SELECT * FROM users WHERE email = $1', [email]);
       let user = result.rows[0];
 
       if (user) {
         // Update existing user
         result = await db.query(
-          'UPDATE profiles SET full_name = $1, avatar_url = $2, updated_at = NOW() WHERE email = $3 RETURNING *',
+          'UPDATE users SET full_name = $1, avatar_url = $2, updated_at = NOW() WHERE email = $3 RETURNING *',
           [name, picture, email]
         );
         user = result.rows[0];
       } else {
         // Create new user
         result = await db.query(
-          'INSERT INTO profiles (id, email, full_name, avatar_url) VALUES ($1, $2, $3, $4) RETURNING *',
+          'INSERT INTO users (id, email, full_name, avatar_url) VALUES ($1, $2, $3, $4) RETURNING *',
           [googleId, email, name, picture]
         );
         user = result.rows[0];
