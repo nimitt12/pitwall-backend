@@ -130,6 +130,15 @@ const TABLES = {
             updated_at: { type: 'timestamp', auto: true },
         },
     },
+    trivia: {
+        pk: 'id',
+        columns: {
+            id: { type: 'text', required: true },
+            body: { type: 'text', required: true },
+            sort_order: { type: 'integer' },
+            updated_at: { type: 'timestamp', auto: true },
+        },
+    },
     users: {
         pk: 'id',
         columns: {
