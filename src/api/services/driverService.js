@@ -96,10 +96,17 @@ const syncDriverSeason = async () => {
 const getAllDriversSeasonRankingsFromDb = async () => {
     try {
         const result = await db.query(`
-            SELECT ds.*, d.given_name, d.family_name, d.code, d.number, d.nationality, c.name as constructor_name
+            SELECT ds.*, d.given_name, d.family_name, d.code, d.number, d.nationality, c.name as constructor_name,
+                COALESCE(p.podiums, 0) AS podiums
             FROM drivers_season ds
             JOIN drivers d ON ds.driver_id = d.id
             LEFT JOIN constructors c ON d.constructor_id = c.id
+            LEFT JOIN (
+                SELECT season, driver_number, COUNT(*) AS podiums
+                FROM results
+                WHERE position IN ('1', '2', '3')
+                GROUP BY season, driver_number
+            ) p ON p.season = ds.season AND p.driver_number = d.number
             ORDER BY season DESC, CAST(points AS NUMERIC) DESC`);
         return result.rows;
     } catch (error) {
