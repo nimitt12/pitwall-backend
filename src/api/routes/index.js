@@ -8,6 +8,7 @@ const triviaRoutes = require('./triviaRoutes');
 const authRoutes = require('./authRoutes');
 const adminRoutes = require('./adminRoutes');
 const profileRoutes = require('./profileRoutes');
+const liveRoutes = require('./liveRoutes');
 const db = require('../../config/database');
 
 const constructorController = require('../controllers/constructorController');
@@ -88,5 +89,6 @@ router.use('/trivia', triviaRoutes);
 router.use('/auth', authRoutes);
 router.use('/admin', adminRoutes);
 router.use('/profile', profileRoutes);
+router.use('/live', liveRoutes);
 
 module.exports = router;

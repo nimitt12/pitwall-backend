@@ -45,3 +45,11 @@ IDs for synced rows are constructed as `${season}_${round}_${driverId}` to dedup
 ### Database
 
 No migration tool/ORM — tables (`drivers`, `drivers_season`, `constructors`, `constructors_season`, `results`, `qualifying`, `users`) are assumed to pre-exist in Postgres; schema changes must be made manually against the DB. Queries are raw SQL via the `pg` `Pool` exposed from `src/config/database.js`.
+
+### Live timing relay
+
+`services/liveTimingService.js` holds a single upstream connection to the unofficial F1 live timing feed (`livetiming.formula1.com/signalrcore`, SignalR Core protocol: POST negotiate → WebSocket → `{"protocol":"json","version":1}\x1e` handshake → `Subscribe` invocation) and re-broadcasts merged state to any number of SSE clients via `/live/stream` (snapshot event + per-topic update events); `/live/state` is the one-shot snapshot. `.z` topics (CarData/Position) are base64+deflate-raw and stored decompressed under their bare names; other topics are deep-merged deltas (array patches arrive as objects keyed by stringified index). The upstream connection is lazy — opens on the first SSE subscriber, closes 60s after the last leaves.
+
+Caveats: the legacy `/signalr` endpoint now returns 401 (F1 TV subscription token required) — only `/signalrcore` negotiates anonymously. If that changes, set `F1_LIVETIMING_TOKEN` (an F1 TV subscription JWT) and it's attached as a bearer token. `POST /live/simulate/start|stop` replays a synthetic Grand Prix through the same ingest path for demos/testing.
+
+**Session archive replay.** F1 archives every session's raw feed since 2018 as static files (`livetiming.formula1.com/static/{year}/Index.json` for the season index; `{session.Path}{Topic}.jsonStream` per topic, each line `H:MM:SS.mmm` elapsed-offset + the same JSON delta the live socket sends, BOM-prefixed). `liveTimingService` exposes `GET /live/archive/:year` (proxied+cached index) and `POST /live/replay/start` / `/live/replay/{stop|pause|resume|speed|seek}` — replay downloads a session's streams (~20MB for a race, held in memory until stopped/idle) and schedules the recorded lines through the same ingest path and SSE stream at 1–30× speed. Seeks rebuild state silently and broadcast one `snapshot` SSE event. Replay, the simulator and the real feed are mutually exclusive sources.
