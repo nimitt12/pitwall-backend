@@ -710,6 +710,10 @@ const ARCHIVE_FIRST_YEAR = 2018;
 const SNAPSHOT_TOPICS = new Set(['CarData.z', 'Position.z']);
 const REPLAY_TICK_MS = 200;
 const REPLAY_SPEEDS = [1, 2, 5, 10, 20, 30];
+// Skip straight to just before the green flag by default: archive recordings
+// begin up to an hour before the session actually starts. This much lead-in is
+// kept so the user still catches the grid forming / the start itself.
+const REPLAY_LEAD_IN_MS = 15_000;
 
 const stripBom = (text) => (text.charCodeAt(0) === 0xfeff ? text.slice(1) : text);
 
@@ -824,6 +828,27 @@ const replayTick = () => {
 };
 
 /**
+ * Find the offset (ms into the recording) at which the session actually goes
+ * green. F1's `SessionData.StatusSeries` carries a `SessionStatus: "Started"`
+ * marker at lights-out; everything before it is pre-session build-up. Returns 0
+ * if no such marker is found (older/partial recordings) so playback just begins
+ * at the top.
+ */
+const findSessionStartMs = (streams) => {
+    const sd = streams.find((s) => s.topic === 'SessionData');
+    if (!sd) return 0;
+    for (const line of sd.lines) {
+        let data;
+        try { data = JSON.parse(line.raw); } catch { continue; }
+        const series = data?.StatusSeries;
+        if (!series) continue;
+        const entries = Array.isArray(series) ? series : Object.values(series);
+        if (entries.some((e) => e && e.SessionStatus === 'Started')) return line.t;
+    }
+    return 0;
+};
+
+/**
  * Load a session from the archive and start playing it through the live
  * pipeline. Resolves once the streams are downloaded and playback begins.
  */
@@ -879,8 +904,20 @@ const startReplay = async (path, { name = '', speed = 1 } = {}) => {
         lastTickAt: Date.now(),
         interval: setInterval(replayTick, REPLAY_TICK_MS),
     };
-    emitter.emit('snapshot');
-    emitReplayProgress();
+
+    // Skip the pre-session build-up by default, landing just before the green
+    // flag. seekReplay folds state up to that point and emits the snapshot.
+    // startOffsetMs anchors the transport bar so it represents the session, not
+    // the (much longer) raw recording with its dead pre-session lead-in.
+    const startMs = findSessionStartMs(streams);
+    const initialMs = startMs > REPLAY_LEAD_IN_MS ? startMs - REPLAY_LEAD_IN_MS : 0;
+    state.replay.startOffsetMs = initialMs;
+    if (initialMs > 0) {
+        seekReplay(initialMs);
+    } else {
+        emitter.emit('snapshot');
+        emitReplayProgress();
+    }
     return getState();
 };
 
