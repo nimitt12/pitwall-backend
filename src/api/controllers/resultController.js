@@ -78,10 +78,27 @@ const getQualifyingBySeasonAndRound = async (req, res) => {
     }
 };
 
+/**
+ * Controller to handle fetching lap-by-lap positions from external API
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ */
+const getLapPositions = async (req, res) => {
+    try {
+        const { season, round } = req.params;
+        const laps = await resultService.getLapPositions(season, round);
+        res.json(laps);
+    } catch (error) {
+        console.error('Error in getLapPositions controller:', error.message);
+        res.status(500).json({ error: 'Failed to fetch lap positions' });
+    }
+};
+
 module.exports = {
     syncResults,
     syncQualifying,
     getResultsBySeasonAndRound,
     getQualifyingBySeasonAndRound,
-    getStatsOverall
+    getStatsOverall,
+    getLapPositions
 };

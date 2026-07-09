@@ -312,10 +312,75 @@ const getQualifyingBySeasonAndRoundFromDb = async (season, round) => {
     }
 };
 
+// Completed races are immutable, so lap data is cached in memory for the
+// lifetime of the process to avoid re-hitting the external API.
+const lapPositionsCache = new Map();
+
+/**
+ * Fetches lap-by-lap positions for a race from the external API (paginated).
+ * @param {string} season
+ * @param {string} round
+ * @returns {Promise<Object>} { season, round, totalLaps, drivers: { [driverId]: [{ lap, position }] } }
+ */
+const getLapPositions = async (season, round) => {
+    const cacheKey = `${season}_${round}`;
+    if (lapPositionsCache.has(cacheKey)) {
+        return lapPositionsCache.get(cacheKey);
+    }
+
+    try {
+        const limit = 100; // API caps page size at 100 timing entries
+        let offset = 0;
+        let hasMore = true;
+        const drivers = {};
+        let totalLaps = 0;
+
+        while (hasMore) {
+            const url = `https://api.jolpi.ca/ergast/f1/${season}/${round}/laps/?format=json&limit=${limit}&offset=${offset}`;
+            const response = await axios.get(url);
+            const mrData = response.data.MRData;
+            const races = mrData.RaceTable.Races;
+            const total = parseInt(mrData.total);
+
+            if (!races || races.length === 0) {
+                hasMore = false;
+                break;
+            }
+
+            for (const lap of races[0].Laps || []) {
+                const lapNumber = parseInt(lap.number);
+                totalLaps = Math.max(totalLaps, lapNumber);
+                for (const timing of lap.Timings || []) {
+                    if (!drivers[timing.driverId]) drivers[timing.driverId] = [];
+                    drivers[timing.driverId].push({
+                        lap: lapNumber,
+                        position: parseInt(timing.position)
+                    });
+                }
+            }
+
+            offset += limit;
+            if (offset >= total) hasMore = false;
+            // Stay under the external API's burst rate limit.
+            if (hasMore) await new Promise(resolve => setTimeout(resolve, 250));
+        }
+
+        const payload = { season, round, totalLaps, drivers };
+        if (totalLaps > 0) {
+            lapPositionsCache.set(cacheKey, payload);
+        }
+        return payload;
+    } catch (error) {
+        console.error('Error fetching lap positions:', error.message);
+        throw error;
+    }
+};
+
 module.exports = {
     syncResults,
     syncQualifying,
     getResultsBySeasonAndRoundFromDb,
     getQualifyingBySeasonAndRoundFromDb,
-    getStatsOverallFromDb
+    getStatsOverallFromDb,
+    getLapPositions
 };

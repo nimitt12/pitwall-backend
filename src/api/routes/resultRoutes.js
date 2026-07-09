@@ -78,6 +78,31 @@ router.get('/get-all-qualifying-results/:season/:round', resultController.getQua
 
 /**
  * @swagger
+ * /results/get-lap-positions/{season}/{round}:
+ *   get:
+ *     summary: Get lap-by-lap positions for a race
+ *     tags: [Results]
+ *     parameters:
+ *       - in: path
+ *         name: season
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The season year
+ *       - in: path
+ *         name: round
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The race round number
+ *     responses:
+ *       200:
+ *         description: Per-driver lap-by-lap positions for the specified race
+ */
+router.get('/get-lap-positions/:season/:round', resultController.getLapPositions);
+
+/**
+ * @swagger
  * /results/get-stats-overall/{season}:
  *   get:
  *     summary: Get overall statistics for a season
