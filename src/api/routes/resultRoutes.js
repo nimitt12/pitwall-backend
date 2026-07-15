@@ -28,6 +28,30 @@ router.get('/sync-qualifying', resultController.syncQualifying);
 
 /**
  * @swagger
+ * /results/sync-sprint-results:
+ *   get:
+ *     summary: Sync sprint race results
+ *     tags: [Results]
+ *     responses:
+ *       200:
+ *         description: Sync successful
+ */
+router.get('/sync-sprint-results', resultController.syncSprintResults);
+
+/**
+ * @swagger
+ * /results/sync-sprint-qualifying:
+ *   get:
+ *     summary: Sync sprint qualifying results
+ *     tags: [Results]
+ *     responses:
+ *       200:
+ *         description: Sync successful
+ */
+router.get('/sync-sprint-qualifying', resultController.syncSprintQualifying);
+
+/**
+ * @swagger
  * /results/get-all-results/{season}/{round}:
  *   get:
  *     summary: Get results by season and round
@@ -75,6 +99,56 @@ router.get('/get-all-results/:season/:round', resultController.getResultsBySeaso
  *         description: Qualifying results for the specified season and round
  */
 router.get('/get-all-qualifying-results/:season/:round', resultController.getQualifyingBySeasonAndRound);
+
+/**
+ * @swagger
+ * /results/get-all-sprint-results/{season}/{round}:
+ *   get:
+ *     summary: Get sprint results by season and round
+ *     tags: [Results]
+ *     parameters:
+ *       - in: path
+ *         name: season
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The season year
+ *       - in: path
+ *         name: round
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The race round number
+ *     responses:
+ *       200:
+ *         description: Sprint results for the specified season and round
+ */
+router.get('/get-all-sprint-results/:season/:round', resultController.getSprintResultsBySeasonAndRound);
+
+/**
+ * @swagger
+ * /results/get-all-sprint-qualifying-results/{season}/{round}:
+ *   get:
+ *     summary: Get sprint qualifying results by season and round
+ *     tags: [Results]
+ *     parameters:
+ *       - in: path
+ *         name: season
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The season year
+ *       - in: path
+ *         name: round
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The race round number
+ *     responses:
+ *       200:
+ *         description: Sprint qualifying results for the specified season and round
+ */
+router.get('/get-all-sprint-qualifying-results/:season/:round', resultController.getSprintQualifyingBySeasonAndRound);
 
 /**
  * @swagger
