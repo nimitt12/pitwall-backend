@@ -39,4 +39,31 @@ router.get('/sync-driver-season', driverController.syncDriverSeason);
  */
 router.get('/get-all-drivers-season-rankings', driverController.getAllDbDriversSeasonRankings);
 
+/**
+ * @swagger
+ * /drivers/compare/{season}/{driverId1}/{driverId2}:
+ *   get:
+ *     summary: Get head-to-head comparison between two drivers for a season
+ *     tags: [Drivers]
+ *     parameters:
+ *       - in: path
+ *         name: season
+ *         required: true
+ *         schema: { type: string }
+ *       - in: path
+ *         name: driverId1
+ *         required: true
+ *         schema: { type: string }
+ *       - in: path
+ *         name: driverId2
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Season stats, last 5 results, and qualifying/race head-to-head counts for both drivers
+ *       404:
+ *         description: One or both drivers not found for this season
+ */
+router.get('/compare/:season/:driverId1/:driverId2', driverController.getDriverComparison);
+
 module.exports = router;

@@ -40,8 +40,28 @@ const getAllDbDriversSeasonRankings = async (req, res) => {
     }
 };
 
+/**
+ * Controller to handle fetching a head-to-head comparison between two drivers
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ */
+const getDriverComparison = async (req, res) => {
+    try {
+        const { season, driverId1, driverId2 } = req.params;
+        const comparison = await driverService.getDriverComparisonFromDb(season, driverId1, driverId2);
+        if (!comparison) {
+            return res.status(404).json({ error: 'One or both drivers not found for this season' });
+        }
+        res.json(comparison);
+    } catch (error) {
+        console.error('Error in getDriverComparison controller:', error.message);
+        res.status(500).json({ error: 'Failed to fetch driver comparison' });
+    }
+};
+
 module.exports = {
     getAllDbDrivers,
     syncDriverSeason,
-    getAllDbDriversSeasonRankings
+    getAllDbDriversSeasonRankings,
+    getDriverComparison
 };
