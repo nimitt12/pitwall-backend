@@ -152,6 +152,18 @@ const TABLES = {
             password: { type: 'text', hidden: true },
         },
     },
+    account_deletion_requests: {
+        pk: 'id',
+        columns: {
+            id: { type: 'text', required: true },
+            user_id: { type: 'text', required: true },
+            email: { type: 'text', required: true },
+            reason: { type: 'text' },
+            status: { type: 'text' },
+            requested_at: { type: 'timestamp', auto: true },
+            updated_at: { type: 'timestamp', auto: true },
+        },
+    },
 };
 
 /** Build an Error carrying an HTTP status for the controller to surface. */

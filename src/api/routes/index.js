@@ -9,6 +9,7 @@ const authRoutes = require('./authRoutes');
 const adminRoutes = require('./adminRoutes');
 const profileRoutes = require('./profileRoutes');
 const liveRoutes = require('./liveRoutes');
+const accountRoutes = require('./accountRoutes');
 const db = require('../../config/database');
 
 const constructorController = require('../controllers/constructorController');
@@ -90,5 +91,6 @@ router.use('/auth', authRoutes);
 router.use('/admin', adminRoutes);
 router.use('/profile', profileRoutes);
 router.use('/live', liveRoutes);
+router.use('/account', accountRoutes);
 
 module.exports = router;
