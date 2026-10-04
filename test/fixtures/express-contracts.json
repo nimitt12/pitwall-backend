@@ -1,0 +1,5518 @@
+{
+  "routes": [
+    {
+      "method": "get",
+      "path": "/constructors"
+    },
+    {
+      "method": "get",
+      "path": "/constructors/get-all-constructors"
+    },
+    {
+      "method": "get",
+      "path": "/constructors/sync-constructor-season"
+    },
+    {
+      "method": "get",
+      "path": "/constructors/get-all-constructors-season-rankings"
+    },
+    {
+      "method": "get",
+      "path": "/drivers/get-all-drivers"
+    },
+    {
+      "method": "get",
+      "path": "/drivers/sync-driver-season"
+    },
+    {
+      "method": "get",
+      "path": "/drivers/get-all-drivers-season-rankings"
+    },
+    {
+      "method": "get",
+      "path": "/drivers/compare/:season/:driverId1/:driverId2"
+    },
+    {
+      "method": "get",
+      "path": "/results/sync-results"
+    },
+    {
+      "method": "get",
+      "path": "/results/sync-qualifying"
+    },
+    {
+      "method": "get",
+      "path": "/results/sync-sprint-results"
+    },
+    {
+      "method": "get",
+      "path": "/results/sync-sprint-qualifying"
+    },
+    {
+      "method": "get",
+      "path": "/results/get-all-results/:season/:round"
+    },
+    {
+      "method": "get",
+      "path": "/results/get-all-qualifying-results/:season/:round"
+    },
+    {
+      "method": "get",
+      "path": "/results/get-all-sprint-results/:season/:round"
+    },
+    {
+      "method": "get",
+      "path": "/results/get-all-sprint-qualifying-results/:season/:round"
+    },
+    {
+      "method": "get",
+      "path": "/results/get-lap-positions/:season/:round"
+    },
+    {
+      "method": "get",
+      "path": "/results/get-stats-overall/:season"
+    },
+    {
+      "method": "get",
+      "path": "/races"
+    },
+    {
+      "method": "get",
+      "path": "/trivia"
+    },
+    {
+      "method": "post",
+      "path": "/auth/register"
+    },
+    {
+      "method": "post",
+      "path": "/auth/login"
+    },
+    {
+      "method": "post",
+      "path": "/auth/google"
+    },
+    {
+      "method": "get",
+      "path": "/admin/verify"
+    },
+    {
+      "method": "get",
+      "path": "/admin/tables"
+    },
+    {
+      "method": "get",
+      "path": "/admin/:table"
+    },
+    {
+      "method": "post",
+      "path": "/admin/:table"
+    },
+    {
+      "method": "get",
+      "path": "/admin/:table/distinct/:column"
+    },
+    {
+      "method": "get",
+      "path": "/admin/:table/:id"
+    },
+    {
+      "method": "put",
+      "path": "/admin/:table/:id"
+    },
+    {
+      "method": "delete",
+      "path": "/admin/:table/:id"
+    },
+    {
+      "method": "get",
+      "path": "/profile/:id"
+    },
+    {
+      "method": "put",
+      "path": "/profile/:id"
+    },
+    {
+      "method": "get",
+      "path": "/live/state"
+    },
+    {
+      "method": "get",
+      "path": "/live/stream"
+    },
+    {
+      "method": "post",
+      "path": "/live/simulate/start"
+    },
+    {
+      "method": "post",
+      "path": "/live/simulate/stop"
+    },
+    {
+      "method": "get",
+      "path": "/live/archive/:year"
+    },
+    {
+      "method": "post",
+      "path": "/live/replay/start"
+    },
+    {
+      "method": "post",
+      "path": "/live/replay/:action"
+    },
+    {
+      "method": "post",
+      "path": "/account/delete-request"
+    },
+    {
+      "method": "get",
+      "path": "/health"
+    },
+    {
+      "method": "get",
+      "path": "/get-all-drivers"
+    },
+    {
+      "method": "get",
+      "path": "/db-test"
+    }
+  ],
+  "cases": [
+    {
+      "method": "get",
+      "path": "/constructors",
+      "mode": "success",
+      "url": "/constructors",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "marker": "service-result",
+          "simulated": true,
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "constructorService",
+            "method": "getConstructorStandings",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/constructors",
+      "mode": "error",
+      "url": "/constructors",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to fetch constructor standings"
+        },
+        "calls": [
+          {
+            "service": "constructorService",
+            "method": "getConstructorStandings",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/constructors",
+      "mode": "status-error",
+      "url": "/constructors",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to fetch constructor standings"
+        },
+        "calls": [
+          {
+            "service": "constructorService",
+            "method": "getConstructorStandings",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/constructors/get-all-constructors",
+      "mode": "success",
+      "url": "/constructors/get-all-constructors",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "marker": "service-result",
+          "simulated": true,
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "constructorService",
+            "method": "getAllConstructorsFromDb",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/constructors/get-all-constructors",
+      "mode": "error",
+      "url": "/constructors/get-all-constructors",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to fetch constructors from database"
+        },
+        "calls": [
+          {
+            "service": "constructorService",
+            "method": "getAllConstructorsFromDb",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/constructors/get-all-constructors",
+      "mode": "status-error",
+      "url": "/constructors/get-all-constructors",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to fetch constructors from database"
+        },
+        "calls": [
+          {
+            "service": "constructorService",
+            "method": "getAllConstructorsFromDb",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/constructors/sync-constructor-season",
+      "mode": "success",
+      "url": "/constructors/sync-constructor-season",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "marker": "service-result",
+          "simulated": true,
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "constructorService",
+            "method": "syncConstructorSeason",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/constructors/sync-constructor-season",
+      "mode": "error",
+      "url": "/constructors/sync-constructor-season",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to sync constructor season"
+        },
+        "calls": [
+          {
+            "service": "constructorService",
+            "method": "syncConstructorSeason",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/constructors/sync-constructor-season",
+      "mode": "status-error",
+      "url": "/constructors/sync-constructor-season",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to sync constructor season"
+        },
+        "calls": [
+          {
+            "service": "constructorService",
+            "method": "syncConstructorSeason",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/constructors/get-all-constructors-season-rankings",
+      "mode": "success",
+      "url": "/constructors/get-all-constructors-season-rankings",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "marker": "service-result",
+          "simulated": true,
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "constructorService",
+            "method": "getAllConstructorsSeasonRankingsFromDb",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/constructors/get-all-constructors-season-rankings",
+      "mode": "error",
+      "url": "/constructors/get-all-constructors-season-rankings",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to fetch constructors season rankings from database"
+        },
+        "calls": [
+          {
+            "service": "constructorService",
+            "method": "getAllConstructorsSeasonRankingsFromDb",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/constructors/get-all-constructors-season-rankings",
+      "mode": "status-error",
+      "url": "/constructors/get-all-constructors-season-rankings",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to fetch constructors season rankings from database"
+        },
+        "calls": [
+          {
+            "service": "constructorService",
+            "method": "getAllConstructorsSeasonRankingsFromDb",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/drivers/get-all-drivers",
+      "mode": "success",
+      "url": "/drivers/get-all-drivers",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "marker": "service-result",
+          "simulated": true,
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "driverService",
+            "method": "getAllDriversFromDb",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/drivers/get-all-drivers",
+      "mode": "error",
+      "url": "/drivers/get-all-drivers",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to fetch drivers from database"
+        },
+        "calls": [
+          {
+            "service": "driverService",
+            "method": "getAllDriversFromDb",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/drivers/get-all-drivers",
+      "mode": "status-error",
+      "url": "/drivers/get-all-drivers",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to fetch drivers from database"
+        },
+        "calls": [
+          {
+            "service": "driverService",
+            "method": "getAllDriversFromDb",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/drivers/sync-driver-season",
+      "mode": "success",
+      "url": "/drivers/sync-driver-season",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "marker": "service-result",
+          "simulated": true,
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "driverService",
+            "method": "syncDriverSeason",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/drivers/sync-driver-season",
+      "mode": "error",
+      "url": "/drivers/sync-driver-season",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to sync driver season data"
+        },
+        "calls": [
+          {
+            "service": "driverService",
+            "method": "syncDriverSeason",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/drivers/sync-driver-season",
+      "mode": "status-error",
+      "url": "/drivers/sync-driver-season",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to sync driver season data"
+        },
+        "calls": [
+          {
+            "service": "driverService",
+            "method": "syncDriverSeason",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/drivers/get-all-drivers-season-rankings",
+      "mode": "success",
+      "url": "/drivers/get-all-drivers-season-rankings",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "marker": "service-result",
+          "simulated": true,
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "driverService",
+            "method": "getAllDriversSeasonRankingsFromDb",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/drivers/get-all-drivers-season-rankings",
+      "mode": "error",
+      "url": "/drivers/get-all-drivers-season-rankings",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to fetch driver season rankings from database"
+        },
+        "calls": [
+          {
+            "service": "driverService",
+            "method": "getAllDriversSeasonRankingsFromDb",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/drivers/get-all-drivers-season-rankings",
+      "mode": "status-error",
+      "url": "/drivers/get-all-drivers-season-rankings",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to fetch driver season rankings from database"
+        },
+        "calls": [
+          {
+            "service": "driverService",
+            "method": "getAllDriversSeasonRankingsFromDb",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/drivers/compare/:season/:driverId1/:driverId2",
+      "mode": "success",
+      "url": "/drivers/compare/2026/norris/piastri",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "marker": "service-result",
+          "simulated": true,
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "driverService",
+            "method": "getDriverComparisonFromDb",
+            "args": [
+              "2026",
+              "norris",
+              "piastri"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/drivers/compare/:season/:driverId1/:driverId2",
+      "mode": "error",
+      "url": "/drivers/compare/2026/norris/piastri",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to fetch driver comparison"
+        },
+        "calls": [
+          {
+            "service": "driverService",
+            "method": "getDriverComparisonFromDb",
+            "args": [
+              "2026",
+              "norris",
+              "piastri"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/drivers/compare/:season/:driverId1/:driverId2",
+      "mode": "status-error",
+      "url": "/drivers/compare/2026/norris/piastri",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to fetch driver comparison"
+        },
+        "calls": [
+          {
+            "service": "driverService",
+            "method": "getDriverComparisonFromDb",
+            "args": [
+              "2026",
+              "norris",
+              "piastri"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/results/sync-results",
+      "mode": "success",
+      "url": "/results/sync-results",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "marker": "service-result",
+          "simulated": true,
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "resultService",
+            "method": "syncResults",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/results/sync-results",
+      "mode": "error",
+      "url": "/results/sync-results",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to sync race results"
+        },
+        "calls": [
+          {
+            "service": "resultService",
+            "method": "syncResults",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/results/sync-results",
+      "mode": "status-error",
+      "url": "/results/sync-results",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to sync race results"
+        },
+        "calls": [
+          {
+            "service": "resultService",
+            "method": "syncResults",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/results/sync-qualifying",
+      "mode": "success",
+      "url": "/results/sync-qualifying",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "marker": "service-result",
+          "simulated": true,
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "resultService",
+            "method": "syncQualifying",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/results/sync-qualifying",
+      "mode": "error",
+      "url": "/results/sync-qualifying",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to sync qualifying results"
+        },
+        "calls": [
+          {
+            "service": "resultService",
+            "method": "syncQualifying",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/results/sync-qualifying",
+      "mode": "status-error",
+      "url": "/results/sync-qualifying",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to sync qualifying results"
+        },
+        "calls": [
+          {
+            "service": "resultService",
+            "method": "syncQualifying",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/results/sync-sprint-results",
+      "mode": "success",
+      "url": "/results/sync-sprint-results",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "marker": "service-result",
+          "simulated": true,
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "resultService",
+            "method": "syncSprintResults",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/results/sync-sprint-results",
+      "mode": "error",
+      "url": "/results/sync-sprint-results",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to sync sprint results"
+        },
+        "calls": [
+          {
+            "service": "resultService",
+            "method": "syncSprintResults",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/results/sync-sprint-results",
+      "mode": "status-error",
+      "url": "/results/sync-sprint-results",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to sync sprint results"
+        },
+        "calls": [
+          {
+            "service": "resultService",
+            "method": "syncSprintResults",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/results/sync-sprint-qualifying",
+      "mode": "success",
+      "url": "/results/sync-sprint-qualifying",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "marker": "service-result",
+          "simulated": true,
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "resultService",
+            "method": "syncSprintQualifying",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/results/sync-sprint-qualifying",
+      "mode": "error",
+      "url": "/results/sync-sprint-qualifying",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to sync sprint qualifying results"
+        },
+        "calls": [
+          {
+            "service": "resultService",
+            "method": "syncSprintQualifying",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/results/sync-sprint-qualifying",
+      "mode": "status-error",
+      "url": "/results/sync-sprint-qualifying",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to sync sprint qualifying results"
+        },
+        "calls": [
+          {
+            "service": "resultService",
+            "method": "syncSprintQualifying",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/results/get-all-results/:season/:round",
+      "mode": "success",
+      "url": "/results/get-all-results/2026/3",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "marker": "service-result",
+          "simulated": true,
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "resultService",
+            "method": "getResultsBySeasonAndRoundFromDb",
+            "args": [
+              "2026",
+              "3"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/results/get-all-results/:season/:round",
+      "mode": "error",
+      "url": "/results/get-all-results/2026/3",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to fetch race results from database"
+        },
+        "calls": [
+          {
+            "service": "resultService",
+            "method": "getResultsBySeasonAndRoundFromDb",
+            "args": [
+              "2026",
+              "3"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/results/get-all-results/:season/:round",
+      "mode": "status-error",
+      "url": "/results/get-all-results/2026/3",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to fetch race results from database"
+        },
+        "calls": [
+          {
+            "service": "resultService",
+            "method": "getResultsBySeasonAndRoundFromDb",
+            "args": [
+              "2026",
+              "3"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/results/get-all-qualifying-results/:season/:round",
+      "mode": "success",
+      "url": "/results/get-all-qualifying-results/2026/3",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "marker": "service-result",
+          "simulated": true,
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "resultService",
+            "method": "getQualifyingBySeasonAndRoundFromDb",
+            "args": [
+              "2026",
+              "3"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/results/get-all-qualifying-results/:season/:round",
+      "mode": "error",
+      "url": "/results/get-all-qualifying-results/2026/3",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to fetch qualifying results from database"
+        },
+        "calls": [
+          {
+            "service": "resultService",
+            "method": "getQualifyingBySeasonAndRoundFromDb",
+            "args": [
+              "2026",
+              "3"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/results/get-all-qualifying-results/:season/:round",
+      "mode": "status-error",
+      "url": "/results/get-all-qualifying-results/2026/3",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to fetch qualifying results from database"
+        },
+        "calls": [
+          {
+            "service": "resultService",
+            "method": "getQualifyingBySeasonAndRoundFromDb",
+            "args": [
+              "2026",
+              "3"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/results/get-all-sprint-results/:season/:round",
+      "mode": "success",
+      "url": "/results/get-all-sprint-results/2026/3",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "marker": "service-result",
+          "simulated": true,
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "resultService",
+            "method": "getSprintResultsBySeasonAndRoundFromDb",
+            "args": [
+              "2026",
+              "3"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/results/get-all-sprint-results/:season/:round",
+      "mode": "error",
+      "url": "/results/get-all-sprint-results/2026/3",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to fetch sprint results from database"
+        },
+        "calls": [
+          {
+            "service": "resultService",
+            "method": "getSprintResultsBySeasonAndRoundFromDb",
+            "args": [
+              "2026",
+              "3"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/results/get-all-sprint-results/:season/:round",
+      "mode": "status-error",
+      "url": "/results/get-all-sprint-results/2026/3",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to fetch sprint results from database"
+        },
+        "calls": [
+          {
+            "service": "resultService",
+            "method": "getSprintResultsBySeasonAndRoundFromDb",
+            "args": [
+              "2026",
+              "3"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/results/get-all-sprint-qualifying-results/:season/:round",
+      "mode": "success",
+      "url": "/results/get-all-sprint-qualifying-results/2026/3",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "marker": "service-result",
+          "simulated": true,
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "resultService",
+            "method": "getSprintQualifyingBySeasonAndRoundFromDb",
+            "args": [
+              "2026",
+              "3"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/results/get-all-sprint-qualifying-results/:season/:round",
+      "mode": "error",
+      "url": "/results/get-all-sprint-qualifying-results/2026/3",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to fetch sprint qualifying results from database"
+        },
+        "calls": [
+          {
+            "service": "resultService",
+            "method": "getSprintQualifyingBySeasonAndRoundFromDb",
+            "args": [
+              "2026",
+              "3"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/results/get-all-sprint-qualifying-results/:season/:round",
+      "mode": "status-error",
+      "url": "/results/get-all-sprint-qualifying-results/2026/3",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to fetch sprint qualifying results from database"
+        },
+        "calls": [
+          {
+            "service": "resultService",
+            "method": "getSprintQualifyingBySeasonAndRoundFromDb",
+            "args": [
+              "2026",
+              "3"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/results/get-lap-positions/:season/:round",
+      "mode": "success",
+      "url": "/results/get-lap-positions/2026/3",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "marker": "service-result",
+          "simulated": true,
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "resultService",
+            "method": "getLapPositions",
+            "args": [
+              "2026",
+              "3"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/results/get-lap-positions/:season/:round",
+      "mode": "error",
+      "url": "/results/get-lap-positions/2026/3",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to fetch lap positions"
+        },
+        "calls": [
+          {
+            "service": "resultService",
+            "method": "getLapPositions",
+            "args": [
+              "2026",
+              "3"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/results/get-lap-positions/:season/:round",
+      "mode": "status-error",
+      "url": "/results/get-lap-positions/2026/3",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to fetch lap positions"
+        },
+        "calls": [
+          {
+            "service": "resultService",
+            "method": "getLapPositions",
+            "args": [
+              "2026",
+              "3"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/results/get-stats-overall/:season",
+      "mode": "success",
+      "url": "/results/get-stats-overall/2026",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "marker": "service-result",
+          "simulated": true,
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "resultService",
+            "method": "getStatsOverallFromDb",
+            "args": [
+              "2026"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/results/get-stats-overall/:season",
+      "mode": "error",
+      "url": "/results/get-stats-overall/2026",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to fetch statistics from database"
+        },
+        "calls": [
+          {
+            "service": "resultService",
+            "method": "getStatsOverallFromDb",
+            "args": [
+              "2026"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/results/get-stats-overall/:season",
+      "mode": "status-error",
+      "url": "/results/get-stats-overall/2026",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to fetch statistics from database"
+        },
+        "calls": [
+          {
+            "service": "resultService",
+            "method": "getStatsOverallFromDb",
+            "args": [
+              "2026"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/races",
+      "mode": "success",
+      "url": "/races",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "marker": "service-result",
+          "simulated": true,
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "raceService",
+            "method": "getRacesFromDb",
+            "args": [
+              null
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/races",
+      "mode": "error",
+      "url": "/races",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to fetch race calendar"
+        },
+        "calls": [
+          {
+            "service": "raceService",
+            "method": "getRacesFromDb",
+            "args": [
+              null
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/races",
+      "mode": "status-error",
+      "url": "/races",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to fetch race calendar"
+        },
+        "calls": [
+          {
+            "service": "raceService",
+            "method": "getRacesFromDb",
+            "args": [
+              null
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/trivia",
+      "mode": "success",
+      "url": "/trivia",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "marker": "service-result",
+          "simulated": true,
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "triviaService",
+            "method": "getTriviaFromDb",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/trivia",
+      "mode": "error",
+      "url": "/trivia",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to fetch trivia"
+        },
+        "calls": [
+          {
+            "service": "triviaService",
+            "method": "getTriviaFromDb",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/trivia",
+      "mode": "status-error",
+      "url": "/trivia",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to fetch trivia"
+        },
+        "calls": [
+          {
+            "service": "triviaService",
+            "method": "getTriviaFromDb",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "post",
+      "path": "/auth/register",
+      "mode": "success",
+      "url": "/auth/register",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 201,
+        "body": {
+          "marker": "service-result",
+          "simulated": true,
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "authService",
+            "method": "register",
+            "args": [
+              {
+                "email": "test@example.com",
+                "password": "password-123",
+                "fullName": "Test User"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "post",
+      "path": "/auth/register",
+      "mode": "error",
+      "url": "/auth/register",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 400,
+        "body": {
+          "message": "Service failed"
+        },
+        "calls": [
+          {
+            "service": "authService",
+            "method": "register",
+            "args": [
+              {
+                "email": "test@example.com",
+                "password": "password-123",
+                "fullName": "Test User"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "post",
+      "path": "/auth/register",
+      "mode": "status-error",
+      "url": "/auth/register",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 400,
+        "body": {
+          "message": "Service failed"
+        },
+        "calls": [
+          {
+            "service": "authService",
+            "method": "register",
+            "args": [
+              {
+                "email": "test@example.com",
+                "password": "password-123",
+                "fullName": "Test User"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "post",
+      "path": "/auth/login",
+      "mode": "success",
+      "url": "/auth/login",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "marker": "service-result",
+          "simulated": true,
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "authService",
+            "method": "login",
+            "args": [
+              "test@example.com",
+              "password-123"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "post",
+      "path": "/auth/login",
+      "mode": "error",
+      "url": "/auth/login",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 401,
+        "body": {
+          "message": "Service failed"
+        },
+        "calls": [
+          {
+            "service": "authService",
+            "method": "login",
+            "args": [
+              "test@example.com",
+              "password-123"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "post",
+      "path": "/auth/login",
+      "mode": "status-error",
+      "url": "/auth/login",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 401,
+        "body": {
+          "message": "Service failed"
+        },
+        "calls": [
+          {
+            "service": "authService",
+            "method": "login",
+            "args": [
+              "test@example.com",
+              "password-123"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "post",
+      "path": "/auth/google",
+      "mode": "success",
+      "url": "/auth/google",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "marker": "service-result",
+          "simulated": true,
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "authService",
+            "method": "googleLogin",
+            "args": [
+              "google-token"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "post",
+      "path": "/auth/google",
+      "mode": "error",
+      "url": "/auth/google",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 401,
+        "body": {
+          "message": "Service failed"
+        },
+        "calls": [
+          {
+            "service": "authService",
+            "method": "googleLogin",
+            "args": [
+              "google-token"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "post",
+      "path": "/auth/google",
+      "mode": "status-error",
+      "url": "/auth/google",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 401,
+        "body": {
+          "message": "Service failed"
+        },
+        "calls": [
+          {
+            "service": "authService",
+            "method": "googleLogin",
+            "args": [
+              "google-token"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/admin/verify",
+      "mode": "success",
+      "url": "/admin/verify",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "ok": true,
+          "user": {
+            "id": "user-1",
+            "email": "test@example.com",
+            "full_name": "Test User",
+            "avatar_url": null,
+            "is_admin": true
+          }
+        },
+        "calls": []
+      }
+    },
+    {
+      "method": "get",
+      "path": "/admin/tables",
+      "mode": "success",
+      "url": "/admin/tables",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "marker": "service-result",
+          "simulated": true,
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "adminService",
+            "method": "listTables",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/admin/tables",
+      "mode": "error",
+      "url": "/admin/tables",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to list tables"
+        },
+        "calls": [
+          {
+            "service": "adminService",
+            "method": "listTables",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/admin/tables",
+      "mode": "status-error",
+      "url": "/admin/tables",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 422,
+        "body": {
+          "error": "Service failed"
+        },
+        "calls": [
+          {
+            "service": "adminService",
+            "method": "listTables",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/admin/:table",
+      "mode": "success",
+      "url": "/admin/users",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "marker": "service-result",
+          "simulated": true,
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "adminService",
+            "method": "list",
+            "args": [
+              "users",
+              {
+                "filters": {}
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/admin/:table",
+      "mode": "error",
+      "url": "/admin/users",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to fetch records"
+        },
+        "calls": [
+          {
+            "service": "adminService",
+            "method": "list",
+            "args": [
+              "users",
+              {
+                "filters": {}
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/admin/:table",
+      "mode": "status-error",
+      "url": "/admin/users",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 422,
+        "body": {
+          "error": "Service failed"
+        },
+        "calls": [
+          {
+            "service": "adminService",
+            "method": "list",
+            "args": [
+              "users",
+              {
+                "filters": {}
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "post",
+      "path": "/admin/:table",
+      "mode": "success",
+      "url": "/admin/users",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 201,
+        "body": {
+          "marker": "service-result",
+          "simulated": true,
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "adminService",
+            "method": "create",
+            "args": [
+              "users",
+              {
+                "email": "test@example.com",
+                "password": "password-123",
+                "fullName": "Test User",
+                "idToken": "google-token",
+                "userId": "user-1",
+                "reason": "Requested",
+                "fav_constructor": "mclaren",
+                "fav_drivers": [
+                  "norris"
+                ],
+                "path": "2025/meeting/race/",
+                "name": "Race",
+                "speed": 5,
+                "offsetMs": 1000
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "post",
+      "path": "/admin/:table",
+      "mode": "error",
+      "url": "/admin/users",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to create record"
+        },
+        "calls": [
+          {
+            "service": "adminService",
+            "method": "create",
+            "args": [
+              "users",
+              {
+                "email": "test@example.com",
+                "password": "password-123",
+                "fullName": "Test User",
+                "idToken": "google-token",
+                "userId": "user-1",
+                "reason": "Requested",
+                "fav_constructor": "mclaren",
+                "fav_drivers": [
+                  "norris"
+                ],
+                "path": "2025/meeting/race/",
+                "name": "Race",
+                "speed": 5,
+                "offsetMs": 1000
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "post",
+      "path": "/admin/:table",
+      "mode": "status-error",
+      "url": "/admin/users",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 422,
+        "body": {
+          "error": "Service failed"
+        },
+        "calls": [
+          {
+            "service": "adminService",
+            "method": "create",
+            "args": [
+              "users",
+              {
+                "email": "test@example.com",
+                "password": "password-123",
+                "fullName": "Test User",
+                "idToken": "google-token",
+                "userId": "user-1",
+                "reason": "Requested",
+                "fav_constructor": "mclaren",
+                "fav_drivers": [
+                  "norris"
+                ],
+                "path": "2025/meeting/race/",
+                "name": "Race",
+                "speed": 5,
+                "offsetMs": 1000
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/admin/:table/distinct/:column",
+      "mode": "success",
+      "url": "/admin/users/distinct/email",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "marker": "service-result",
+          "simulated": true,
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "adminService",
+            "method": "distinct",
+            "args": [
+              "users",
+              "email",
+              {}
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/admin/:table/distinct/:column",
+      "mode": "error",
+      "url": "/admin/users/distinct/email",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to fetch values"
+        },
+        "calls": [
+          {
+            "service": "adminService",
+            "method": "distinct",
+            "args": [
+              "users",
+              "email",
+              {}
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/admin/:table/distinct/:column",
+      "mode": "status-error",
+      "url": "/admin/users/distinct/email",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 422,
+        "body": {
+          "error": "Service failed"
+        },
+        "calls": [
+          {
+            "service": "adminService",
+            "method": "distinct",
+            "args": [
+              "users",
+              "email",
+              {}
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/admin/:table/:id",
+      "mode": "success",
+      "url": "/admin/users/user-1",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "marker": "service-result",
+          "simulated": true,
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "adminService",
+            "method": "getOne",
+            "args": [
+              "users",
+              "user-1"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/admin/:table/:id",
+      "mode": "error",
+      "url": "/admin/users/user-1",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to fetch record"
+        },
+        "calls": [
+          {
+            "service": "adminService",
+            "method": "getOne",
+            "args": [
+              "users",
+              "user-1"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/admin/:table/:id",
+      "mode": "status-error",
+      "url": "/admin/users/user-1",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 422,
+        "body": {
+          "error": "Service failed"
+        },
+        "calls": [
+          {
+            "service": "adminService",
+            "method": "getOne",
+            "args": [
+              "users",
+              "user-1"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "put",
+      "path": "/admin/:table/:id",
+      "mode": "success",
+      "url": "/admin/users/user-1",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "marker": "service-result",
+          "simulated": true,
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "adminService",
+            "method": "update",
+            "args": [
+              "users",
+              "user-1",
+              {
+                "email": "test@example.com",
+                "password": "password-123",
+                "fullName": "Test User",
+                "idToken": "google-token",
+                "userId": "user-1",
+                "reason": "Requested",
+                "fav_constructor": "mclaren",
+                "fav_drivers": [
+                  "norris"
+                ],
+                "path": "2025/meeting/race/",
+                "name": "Race",
+                "speed": 5,
+                "offsetMs": 1000
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "put",
+      "path": "/admin/:table/:id",
+      "mode": "error",
+      "url": "/admin/users/user-1",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to update record"
+        },
+        "calls": [
+          {
+            "service": "adminService",
+            "method": "update",
+            "args": [
+              "users",
+              "user-1",
+              {
+                "email": "test@example.com",
+                "password": "password-123",
+                "fullName": "Test User",
+                "idToken": "google-token",
+                "userId": "user-1",
+                "reason": "Requested",
+                "fav_constructor": "mclaren",
+                "fav_drivers": [
+                  "norris"
+                ],
+                "path": "2025/meeting/race/",
+                "name": "Race",
+                "speed": 5,
+                "offsetMs": 1000
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "put",
+      "path": "/admin/:table/:id",
+      "mode": "status-error",
+      "url": "/admin/users/user-1",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 422,
+        "body": {
+          "error": "Service failed"
+        },
+        "calls": [
+          {
+            "service": "adminService",
+            "method": "update",
+            "args": [
+              "users",
+              "user-1",
+              {
+                "email": "test@example.com",
+                "password": "password-123",
+                "fullName": "Test User",
+                "idToken": "google-token",
+                "userId": "user-1",
+                "reason": "Requested",
+                "fav_constructor": "mclaren",
+                "fav_drivers": [
+                  "norris"
+                ],
+                "path": "2025/meeting/race/",
+                "name": "Race",
+                "speed": 5,
+                "offsetMs": 1000
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "delete",
+      "path": "/admin/:table/:id",
+      "mode": "success",
+      "url": "/admin/users/user-1",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "marker": "service-result",
+          "simulated": true,
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "adminService",
+            "method": "remove",
+            "args": [
+              "users",
+              "user-1"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "delete",
+      "path": "/admin/:table/:id",
+      "mode": "error",
+      "url": "/admin/users/user-1",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to delete record"
+        },
+        "calls": [
+          {
+            "service": "adminService",
+            "method": "remove",
+            "args": [
+              "users",
+              "user-1"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "delete",
+      "path": "/admin/:table/:id",
+      "mode": "status-error",
+      "url": "/admin/users/user-1",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 422,
+        "body": {
+          "error": "Service failed"
+        },
+        "calls": [
+          {
+            "service": "adminService",
+            "method": "remove",
+            "args": [
+              "users",
+              "user-1"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/profile/:id",
+      "mode": "success",
+      "url": "/profile/user-1",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "marker": "service-result",
+          "simulated": true,
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "profileService",
+            "method": "getProfile",
+            "args": [
+              "user-1"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/profile/:id",
+      "mode": "error",
+      "url": "/profile/user-1",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "message": "Service failed"
+        },
+        "calls": [
+          {
+            "service": "profileService",
+            "method": "getProfile",
+            "args": [
+              "user-1"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/profile/:id",
+      "mode": "status-error",
+      "url": "/profile/user-1",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "message": "Service failed"
+        },
+        "calls": [
+          {
+            "service": "profileService",
+            "method": "getProfile",
+            "args": [
+              "user-1"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "put",
+      "path": "/profile/:id",
+      "mode": "success",
+      "url": "/profile/user-1",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "marker": "service-result",
+          "simulated": true,
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "profileService",
+            "method": "updateProfile",
+            "args": [
+              "user-1",
+              {
+                "email": "test@example.com",
+                "password": "password-123",
+                "fullName": "Test User",
+                "idToken": "google-token",
+                "userId": "user-1",
+                "reason": "Requested",
+                "fav_constructor": "mclaren",
+                "fav_drivers": [
+                  "norris"
+                ],
+                "path": "2025/meeting/race/",
+                "name": "Race",
+                "speed": 5,
+                "offsetMs": 1000
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "put",
+      "path": "/profile/:id",
+      "mode": "error",
+      "url": "/profile/user-1",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "message": "Service failed"
+        },
+        "calls": [
+          {
+            "service": "profileService",
+            "method": "updateProfile",
+            "args": [
+              "user-1",
+              {
+                "email": "test@example.com",
+                "password": "password-123",
+                "fullName": "Test User",
+                "idToken": "google-token",
+                "userId": "user-1",
+                "reason": "Requested",
+                "fav_constructor": "mclaren",
+                "fav_drivers": [
+                  "norris"
+                ],
+                "path": "2025/meeting/race/",
+                "name": "Race",
+                "speed": 5,
+                "offsetMs": 1000
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "put",
+      "path": "/profile/:id",
+      "mode": "status-error",
+      "url": "/profile/user-1",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "message": "Service failed"
+        },
+        "calls": [
+          {
+            "service": "profileService",
+            "method": "updateProfile",
+            "args": [
+              "user-1",
+              {
+                "email": "test@example.com",
+                "password": "password-123",
+                "fullName": "Test User",
+                "idToken": "google-token",
+                "userId": "user-1",
+                "reason": "Requested",
+                "fav_constructor": "mclaren",
+                "fav_drivers": [
+                  "norris"
+                ],
+                "path": "2025/meeting/race/",
+                "name": "Race",
+                "speed": 5,
+                "offsetMs": 1000
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/live/state",
+      "mode": "success",
+      "url": "/live/state",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "marker": "service-result",
+          "simulated": true,
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "liveTimingService",
+            "method": "getState",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/live/state",
+      "mode": "error",
+      "url": "/live/state",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to read live timing state"
+        },
+        "calls": [
+          {
+            "service": "liveTimingService",
+            "method": "getState",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/live/state",
+      "mode": "status-error",
+      "url": "/live/state",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to read live timing state"
+        },
+        "calls": [
+          {
+            "service": "liveTimingService",
+            "method": "getState",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "post",
+      "path": "/live/simulate/start",
+      "mode": "success",
+      "url": "/live/simulate/start",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "status": "Simulation running",
+          "simulated": true
+        },
+        "calls": [
+          {
+            "service": "liveTimingService",
+            "method": "startSimulation",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "post",
+      "path": "/live/simulate/start",
+      "mode": "error",
+      "url": "/live/simulate/start",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to start simulation"
+        },
+        "calls": [
+          {
+            "service": "liveTimingService",
+            "method": "startSimulation",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "post",
+      "path": "/live/simulate/start",
+      "mode": "status-error",
+      "url": "/live/simulate/start",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to start simulation"
+        },
+        "calls": [
+          {
+            "service": "liveTimingService",
+            "method": "startSimulation",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "post",
+      "path": "/live/simulate/stop",
+      "mode": "success",
+      "url": "/live/simulate/stop",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "status": "Simulation stopped",
+          "simulated": true
+        },
+        "calls": [
+          {
+            "service": "liveTimingService",
+            "method": "stopSimulation",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "post",
+      "path": "/live/simulate/stop",
+      "mode": "error",
+      "url": "/live/simulate/stop",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to stop simulation"
+        },
+        "calls": [
+          {
+            "service": "liveTimingService",
+            "method": "stopSimulation",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "post",
+      "path": "/live/simulate/stop",
+      "mode": "status-error",
+      "url": "/live/simulate/stop",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to stop simulation"
+        },
+        "calls": [
+          {
+            "service": "liveTimingService",
+            "method": "stopSimulation",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/live/archive/:year",
+      "mode": "success",
+      "url": "/live/archive/2025",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "marker": "service-result",
+          "simulated": true,
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "liveTimingService",
+            "method": "getArchiveIndex",
+            "args": [
+              "2025"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/live/archive/:year",
+      "mode": "error",
+      "url": "/live/archive/2025",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Service failed"
+        },
+        "calls": [
+          {
+            "service": "liveTimingService",
+            "method": "getArchiveIndex",
+            "args": [
+              "2025"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/live/archive/:year",
+      "mode": "status-error",
+      "url": "/live/archive/2025",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 422,
+        "body": {
+          "error": "Service failed"
+        },
+        "calls": [
+          {
+            "service": "liveTimingService",
+            "method": "getArchiveIndex",
+            "args": [
+              "2025"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "post",
+      "path": "/live/replay/start",
+      "mode": "success",
+      "url": "/live/replay/start",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "status": "Replay running",
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "liveTimingService",
+            "method": "startReplay",
+            "args": [
+              "2025/meeting/race/",
+              {
+                "name": "Race",
+                "speed": 5
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "post",
+      "path": "/live/replay/start",
+      "mode": "error",
+      "url": "/live/replay/start",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Service failed"
+        },
+        "calls": [
+          {
+            "service": "liveTimingService",
+            "method": "startReplay",
+            "args": [
+              "2025/meeting/race/",
+              {
+                "name": "Race",
+                "speed": 5
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "post",
+      "path": "/live/replay/start",
+      "mode": "status-error",
+      "url": "/live/replay/start",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 422,
+        "body": {
+          "error": "Service failed"
+        },
+        "calls": [
+          {
+            "service": "liveTimingService",
+            "method": "startReplay",
+            "args": [
+              "2025/meeting/race/",
+              {
+                "name": "Race",
+                "speed": 5
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "post",
+      "path": "/live/replay/:action",
+      "mode": "success",
+      "url": "/live/replay/pause",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "status": "OK",
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "liveTimingService",
+            "method": "setReplayPaused",
+            "args": [
+              true
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "post",
+      "path": "/live/replay/:action",
+      "mode": "error",
+      "url": "/live/replay/pause",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Replay control failed"
+        },
+        "calls": [
+          {
+            "service": "liveTimingService",
+            "method": "setReplayPaused",
+            "args": [
+              true
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "post",
+      "path": "/live/replay/:action",
+      "mode": "status-error",
+      "url": "/live/replay/pause",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Replay control failed"
+        },
+        "calls": [
+          {
+            "service": "liveTimingService",
+            "method": "setReplayPaused",
+            "args": [
+              true
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "post",
+      "path": "/account/delete-request",
+      "mode": "success",
+      "url": "/account/delete-request",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 201,
+        "body": {
+          "marker": "service-result",
+          "simulated": true,
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "accountService",
+            "method": "createDeletionRequest",
+            "args": [
+              "user-1",
+              {
+                "email": "test@example.com",
+                "reason": "Requested"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "post",
+      "path": "/account/delete-request",
+      "mode": "error",
+      "url": "/account/delete-request",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "message": "Service failed"
+        },
+        "calls": [
+          {
+            "service": "accountService",
+            "method": "createDeletionRequest",
+            "args": [
+              "user-1",
+              {
+                "email": "test@example.com",
+                "reason": "Requested"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "post",
+      "path": "/account/delete-request",
+      "mode": "status-error",
+      "url": "/account/delete-request",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 422,
+        "body": {
+          "message": "Service failed"
+        },
+        "calls": [
+          {
+            "service": "accountService",
+            "method": "createDeletionRequest",
+            "args": [
+              "user-1",
+              {
+                "email": "test@example.com",
+                "reason": "Requested"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/health",
+      "mode": "success",
+      "url": "/health",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "status": "UP",
+          "timestamp": "<ISO timestamp>"
+        },
+        "calls": []
+      }
+    },
+    {
+      "method": "get",
+      "path": "/get-all-drivers",
+      "mode": "success",
+      "url": "/get-all-drivers",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "marker": "service-result",
+          "simulated": true,
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "driverService",
+            "method": "getAllDriversFromDb",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/get-all-drivers",
+      "mode": "error",
+      "url": "/get-all-drivers",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to fetch drivers from database"
+        },
+        "calls": [
+          {
+            "service": "driverService",
+            "method": "getAllDriversFromDb",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/get-all-drivers",
+      "mode": "status-error",
+      "url": "/get-all-drivers",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Failed to fetch drivers from database"
+        },
+        "calls": [
+          {
+            "service": "driverService",
+            "method": "getAllDriversFromDb",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "path": "/db-test",
+      "mode": "success",
+      "url": "/db-test",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "status": "Connected",
+          "message": "Database connection is healthy",
+          "serverTime": "2026-01-01T00:00:00.000Z"
+        },
+        "calls": []
+      }
+    },
+    {
+      "method": "get",
+      "path": "/db-test",
+      "mode": "error",
+      "url": "/db-test",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 500,
+        "body": {
+          "status": "Error",
+          "message": "Failed to connect to the database",
+          "error": "Service failed"
+        },
+        "calls": []
+      }
+    },
+    {
+      "method": "get",
+      "path": "/db-test",
+      "mode": "status-error",
+      "url": "/db-test",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "status": "Connected",
+          "message": "Database connection is healthy",
+          "serverTime": "2026-01-01T00:00:00.000Z"
+        },
+        "calls": []
+      }
+    },
+    {
+      "method": "post",
+      "url": "/auth/register",
+      "mode": "success",
+      "body": {},
+      "expected": {
+        "status": 400,
+        "body": {
+          "message": "Email and password are required"
+        },
+        "calls": []
+      }
+    },
+    {
+      "method": "post",
+      "url": "/auth/login",
+      "mode": "success",
+      "body": {},
+      "expected": {
+        "status": 400,
+        "body": {
+          "message": "Email and password are required"
+        },
+        "calls": []
+      }
+    },
+    {
+      "method": "post",
+      "url": "/auth/google",
+      "mode": "success",
+      "body": {},
+      "expected": {
+        "status": 400,
+        "body": {
+          "message": "Google idToken is required"
+        },
+        "calls": []
+      }
+    },
+    {
+      "method": "post",
+      "url": "/account/delete-request",
+      "mode": "success",
+      "body": {},
+      "expected": {
+        "status": 400,
+        "body": {
+          "message": "userId and email are required"
+        },
+        "calls": []
+      }
+    },
+    {
+      "method": "get",
+      "url": "/profile/user-1",
+      "mode": "null",
+      "expected": {
+        "status": 404,
+        "body": {
+          "message": "Profile not found"
+        },
+        "calls": [
+          {
+            "service": "profileService",
+            "method": "getProfile",
+            "args": [
+              "user-1"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "url": "/drivers/compare/2026/norris/piastri",
+      "mode": "null",
+      "expected": {
+        "status": 404,
+        "body": {
+          "error": "One or both drivers not found for this season"
+        },
+        "calls": [
+          {
+            "service": "driverService",
+            "method": "getDriverComparisonFromDb",
+            "args": [
+              "2026",
+              "norris",
+              "piastri"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "url": "/admin/users/user-1",
+      "mode": "null",
+      "expected": {
+        "status": 404,
+        "body": {
+          "error": "Record not found"
+        },
+        "calls": [
+          {
+            "service": "adminService",
+            "method": "getOne",
+            "args": [
+              "users",
+              "user-1"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "post",
+      "url": "/live/replay/stop",
+      "mode": "success",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "status": "OK",
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "liveTimingService",
+            "method": "stopReplay",
+            "args": []
+          }
+        ]
+      }
+    },
+    {
+      "method": "post",
+      "url": "/live/replay/resume",
+      "mode": "success",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "status": "OK",
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "liveTimingService",
+            "method": "setReplayPaused",
+            "args": [
+              false
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "post",
+      "url": "/live/replay/speed",
+      "mode": "success",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "status": "OK",
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "liveTimingService",
+            "method": "setReplaySpeed",
+            "args": [
+              5
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "post",
+      "url": "/live/replay/seek",
+      "mode": "success",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 200,
+        "body": {
+          "status": "OK",
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "liveTimingService",
+            "method": "seekReplay",
+            "args": [
+              1000
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "post",
+      "url": "/live/replay/unknown",
+      "mode": "success",
+      "body": {
+        "email": "test@example.com",
+        "password": "password-123",
+        "fullName": "Test User",
+        "idToken": "google-token",
+        "userId": "user-1",
+        "reason": "Requested",
+        "fav_constructor": "mclaren",
+        "fav_drivers": [
+          "norris"
+        ],
+        "path": "2025/meeting/race/",
+        "name": "Race",
+        "speed": 5,
+        "offsetMs": 1000
+      },
+      "expected": {
+        "status": 400,
+        "body": {
+          "error": "Unknown replay action: unknown"
+        },
+        "calls": []
+      }
+    },
+    {
+      "method": "get",
+      "url": "/admin/verify",
+      "mode": "success",
+      "auth": "missing",
+      "expected": {
+        "status": 401,
+        "body": {
+          "error": "Authentication required"
+        },
+        "calls": []
+      }
+    },
+    {
+      "method": "get",
+      "url": "/admin/verify",
+      "mode": "success",
+      "auth": "invalid",
+      "expected": {
+        "status": 401,
+        "body": {
+          "error": "Invalid or expired session"
+        },
+        "calls": []
+      }
+    },
+    {
+      "method": "get",
+      "url": "/admin/verify",
+      "mode": "success",
+      "auth": "non-admin",
+      "expected": {
+        "status": 403,
+        "body": {
+          "error": "Admin access required"
+        },
+        "calls": []
+      }
+    },
+    {
+      "method": "get",
+      "url": "/admin/verify",
+      "mode": "success",
+      "auth": "deleted",
+      "expected": {
+        "status": 401,
+        "body": {
+          "error": "User no longer exists"
+        },
+        "calls": []
+      }
+    },
+    {
+      "method": "get",
+      "url": "/admin/verify",
+      "mode": "success",
+      "auth": "db-error",
+      "expected": {
+        "status": 500,
+        "body": {
+          "error": "Authorization check failed"
+        },
+        "calls": []
+      }
+    },
+    {
+      "method": "get",
+      "url": "/admin/verify",
+      "mode": "success",
+      "auth": "expired",
+      "expected": {
+        "status": 401,
+        "body": {
+          "error": "Invalid or expired session"
+        },
+        "calls": []
+      }
+    },
+    {
+      "method": "get",
+      "url": "/admin/users?page=2&limit=15&search=test&email=test%40example.com",
+      "mode": "success",
+      "expected": {
+        "status": 200,
+        "body": {
+          "marker": "service-result",
+          "simulated": true,
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "adminService",
+            "method": "list",
+            "args": [
+              "users",
+              {
+                "page": "2",
+                "limit": "15",
+                "search": "test",
+                "filters": {
+                  "email": "test@example.com"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "url": "/admin/results/distinct/round?season=2026",
+      "mode": "success",
+      "expected": {
+        "status": 200,
+        "body": {
+          "marker": "service-result",
+          "simulated": true,
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "adminService",
+            "method": "distinct",
+            "args": [
+              "results",
+              "round",
+              {
+                "season": "2026"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "method": "get",
+      "url": "/races?season=2026",
+      "mode": "success",
+      "expected": {
+        "status": 200,
+        "body": {
+          "marker": "service-result",
+          "simulated": true,
+          "replay": {
+            "paused": false
+          }
+        },
+        "calls": [
+          {
+            "service": "raceService",
+            "method": "getRacesFromDb",
+            "args": [
+              "2026"
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

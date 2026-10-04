@@ -1,0 +1,50 @@
+# API route inventory
+
+All existing paths are preserved without a global prefix. Admin routes require a valid Bearer JWT and a current database admin flag. Swagger documentation is at `/api-docs`.
+
+| Method | Path | Access |
+| --- | --- | --- |
+| GET | `/constructors` | Public |
+| GET | `/constructors/get-all-constructors` | Public |
+| GET | `/constructors/sync-constructor-season` | Public |
+| GET | `/constructors/get-all-constructors-season-rankings` | Public |
+| GET | `/drivers/get-all-drivers` | Public |
+| GET | `/drivers/sync-driver-season` | Public |
+| GET | `/drivers/get-all-drivers-season-rankings` | Public |
+| GET | `/drivers/compare/:season/:driverId1/:driverId2` | Public |
+| GET | `/results/sync-results` | Public |
+| GET | `/results/sync-qualifying` | Public |
+| GET | `/results/sync-sprint-results` | Public |
+| GET | `/results/sync-sprint-qualifying` | Public |
+| GET | `/results/get-all-results/:season/:round` | Public |
+| GET | `/results/get-all-qualifying-results/:season/:round` | Public |
+| GET | `/results/get-all-sprint-results/:season/:round` | Public |
+| GET | `/results/get-all-sprint-qualifying-results/:season/:round` | Public |
+| GET | `/results/get-lap-positions/:season/:round` | Public |
+| GET | `/results/get-stats-overall/:season` | Public |
+| GET | `/races` | Public |
+| GET | `/trivia` | Public |
+| POST | `/auth/register` | Public |
+| POST | `/auth/login` | Public |
+| POST | `/auth/google` | Public |
+| GET | `/admin/verify` | Admin |
+| GET | `/admin/tables` | Admin |
+| GET | `/admin/:table` | Admin |
+| POST | `/admin/:table` | Admin |
+| GET | `/admin/:table/distinct/:column` | Admin |
+| GET | `/admin/:table/:id` | Admin |
+| PUT | `/admin/:table/:id` | Admin |
+| DELETE | `/admin/:table/:id` | Admin |
+| GET | `/profile/:id` | Public |
+| PUT | `/profile/:id` | Public |
+| GET | `/live/state` | Public |
+| GET | `/live/stream` | Public |
+| POST | `/live/simulate/start` | Public |
+| POST | `/live/simulate/stop` | Public |
+| GET | `/live/archive/:year` | Public |
+| POST | `/live/replay/start` | Public |
+| POST | `/live/replay/:action` | Public |
+| POST | `/account/delete-request` | Public |
+| GET | `/health` | Public |
+| GET | `/get-all-drivers` | Public |
+| GET | `/db-test` | Public |

@@ -1,55 +1,39 @@
-# CLAUDE.md
-
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+# Repository guidance
 
 ## Project
 
-Express backend ("pitwall-backend") that syncs F1 data (drivers, constructors, race results, qualifying) from the Ergast-compatible Jolpica API (`https://api.jolpi.ca/ergast/f1/...`) into PostgreSQL, and serves it to the MyPitWall dashboard frontend. Also provides JWT/Google OAuth user authentication.
+MyPitWall's NestJS 12 / TypeScript backend. It syncs F1 data from Jolpica and OpenF1 into PostgreSQL and serves the dashboard, admin portal, authentication, live timing, simulation, and archive replay. See README.md for setup and docs/api-routes.md for the complete API inventory.
 
 ## Commands
 
-```bash
-npm run dev      # start with nodemon (auto-reload) — used for local development
-npm start         # same as dev (also nodemon), used in production per package.json
-```
+- `npm run dev`: Nest watch mode.
+- `npm start`: compile and start once.
+- `npm run build`: compile to `dist/`.
+- `npm run start:prod`: run `dist/main.js`.
+- `npm run typecheck`: strict TypeScript checking.
+- `npm test`: build and run the Node test suite.
+- `npm run format:check`: check Prettier formatting.
 
-There is no test suite configured (`npm test` is a stub that exits 1) and no lint script. Don't assume either exists.
-
-Server reads config from `.env` (gitignored): `PG_USER`, `PG_PASSWORD`, `PG_HOST`, `PG_DATABASE`, `PG_PORT`, `PG_SCHEMA`, `JWT_SECRET`, `GOOGLE_CLIENT_ID`. The Postgres connection always sets `ssl: { rejectUnauthorized: false }` (`src/config/database.js`), which assumes a hosted Postgres (e.g. Supabase/RDS).
-
-API docs are auto-generated from JSDoc `@swagger` comments in route files and served at `/api-docs` (see `src/config/swagger.js`).
+Node 22.12+ is required; Node 24 is recommended. This is an ESM project; relative TypeScript imports use `.js` extensions. No plain Express entrypoint or router files remain.
 
 ## Architecture
 
-Layered MVC-ish structure under `src/api/`:
+- `src/main.ts` loads `.env`, creates the Nest app, configures shutdown hooks, and listens on `PORT` (default 8080).
+- `src/app.module.ts` composes the feature modules.
+- `src/app.setup.ts` configures CORS, JSON parsing, request logging, and Swagger at `/api-docs` (`/api-docs-json`).
+- Each `src/<feature>/` directory contains a module, controller, and injectable service. Controllers own HTTP contracts; services own business logic and SQL.
+- `DatabaseModule` provides `DatabaseService` globally. Use `db.query` for standalone queries and `db.transaction(async client => ...)` for transactions. Never run `BEGIN` and transactional queries through independent pool queries.
+- `AuthModule` exports `AuthGuard` and `AdminAuthGuard`. Admin routes use the latter, which verifies JWTs and checks the current database `is_admin` flag. Preserve existing public-route behavior unless authorization changes are requested explicitly.
+- Nest Swagger decorators document the actual controller routes. Keep request schemas and response codes in sync with behavior.
 
-- `routes/*.js` — Express routers; only wire paths to controller methods and hold the `@swagger` JSDoc used to build the OpenAPI spec. `routes/index.js` mounts `/health` and `/db-test` directly, plus `/constructors`, `/drivers`, `/results`, `/auth` sub-routers.
-- `controllers/*.js` — thin HTTP adapters: pull params/body from `req`, call the matching service, catch errors and map to a JSON error response. No business logic or SQL here.
-- `services/*.js` — all business logic, SQL queries (via `src/config/database.js`'s `db.query`), and calls to the external Jolpica/Ergast API live here.
-- `middlewares/authMiddleware.js` — verifies `Authorization: Bearer <JWT>` using `JWT_SECRET` and attaches the decoded payload to `req.user`. Not yet applied to any routes in `routes/index.js`/sub-routers — apply it explicitly per-route if protecting an endpoint.
+## Compatibility
 
-This pattern (route → controller → service → db) is consistent across drivers/constructors/results/auth; follow it for new resources rather than introducing a different layering.
+Preserve the existing route URLs, status codes, JSON shapes, and error keys. No global prefix or response envelope is applied. POST actions such as login, simulation, and replay return 200; registration, admin creation, and account-deletion requests return 201. JWTs retain their existing claims, secret, and seven-day lifetime. Raw SQL and the existing hosted PostgreSQL SSL settings are retained.
 
-### Sync vs. read pattern
+`test/fixtures/express-contracts.json` was captured from the original Express app using deterministic service doubles. `test/api-contracts.test.cjs` verifies responses and service arguments against it. Service, transaction, replay, and SSE tests cover the real implementations with isolated external dependencies. Tests must not require credentials or mutate a live database.
 
-Result/qualifying/driver/constructor data follows a two-phase pattern seen in `resultService.js`:
-1. A `sync*` function pages through the external Ergast API (`limit`/`offset`, checking `MRData.total`), upserts rows with `INSERT ... ON CONFLICT (id) DO UPDATE`, wrapped in a single `BEGIN`/`COMMIT`/`ROLLBACK` transaction over the whole paged sync.
-2. A `get*FromDb` function reads back from local Postgres only (joining `results`/`qualifying` against `drivers` and `constructors` for display fields), never hitting the external API on the read path.
+## Live timing
 
-IDs for synced rows are constructed as `${season}_${round}_${driverId}` to dedupe upserts across re-syncs.
+`src/live/live-timing.service.ts` owns the SignalR Core connection, state, emitter, timers, and archive cache per Nest instance. The upstream opens on the first SSE subscriber and closes 60 seconds after the last subscriber leaves. Compressed `.z` topics are inflated; other deltas are deep-merged, including numeric array patches.
 
-### Auth
-
-`authService.js` supports email/password (bcrypt-hashed, stored in a `users` table) and Google OAuth (`google-auth-library` verifies the ID token, then upserts into `users` keyed by email). Both paths issue the same JWT (7d expiry, signed with `JWT_SECRET`) via `generateToken`.
-
-### Database
-
-No migration tool/ORM — tables (`drivers`, `drivers_season`, `constructors`, `constructors_season`, `results`, `qualifying`, `users`) are assumed to pre-exist in Postgres; schema changes must be made manually against the DB. Queries are raw SQL via the `pg` `Pool` exposed from `src/config/database.js`.
-
-### Live timing relay
-
-`services/liveTimingService.js` holds a single upstream connection to the unofficial F1 live timing feed (`livetiming.formula1.com/signalrcore`, SignalR Core protocol: POST negotiate → WebSocket → `{"protocol":"json","version":1}\x1e` handshake → `Subscribe` invocation) and re-broadcasts merged state to any number of SSE clients via `/live/stream` (snapshot event + per-topic update events); `/live/state` is the one-shot snapshot. `.z` topics (CarData/Position) are base64+deflate-raw and stored decompressed under their bare names; other topics are deep-merged deltas (array patches arrive as objects keyed by stringified index). The upstream connection is lazy — opens on the first SSE subscriber, closes 60s after the last leaves.
-
-Caveats: the legacy `/signalr` endpoint now returns 401 (F1 TV subscription token required) — only `/signalrcore` negotiates anonymously. If that changes, set `F1_LIVETIMING_TOKEN` (an F1 TV subscription JWT) and it's attached as a bearer token. `POST /live/simulate/start|stop` replays a synthetic Grand Prix through the same ingest path for demos/testing.
-
-**Session archive replay.** F1 archives every session's raw feed since 2018 as static files (`livetiming.formula1.com/static/{year}/Index.json` for the season index; `{session.Path}{Topic}.jsonStream` per topic, each line `H:MM:SS.mmm` elapsed-offset + the same JSON delta the live socket sends, BOM-prefixed). `liveTimingService` exposes `GET /live/archive/:year` (proxied+cached index) and `POST /live/replay/start` / `/live/replay/{stop|pause|resume|speed|seek}` — replay downloads a session's streams (~20MB for a race, held in memory until stopped/idle) and schedules the recorded lines through the same ingest path and SSE stream at 1–30× speed. Seeks rebuild state silently and broadcast one `snapshot` SSE event. Replay, the simulator and the real feed are mutually exclusive sources.
+Live, simulation, and replay sources are mutually exclusive. Replay downloads F1 static `.jsonStream` archives, supports pause/resume/speed/seek, and broadcasts full snapshots on reset. `onModuleDestroy` aborts pending fetches, closes subscribers, and releases sockets and timers. Preserve that lifecycle when adding background work.
