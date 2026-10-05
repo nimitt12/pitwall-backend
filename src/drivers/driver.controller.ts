@@ -1,5 +1,15 @@
-import { Controller, Get, HttpCode, HttpException, Param } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  HttpCode,
+  HttpException,
+  Param,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { AdminAuthGuard } from '../auth/admin-auth.guard.js';
+import { ExclusiveWorkInterceptor } from '../security/exclusive-work.interceptor.js';
 import { DriverService } from './driver.service.js';
 
 @ApiTags('Drivers')
@@ -21,6 +31,9 @@ export class DriverController {
     }
   }
 
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth('bearerAuth')
+  @UseInterceptors(ExclusiveWorkInterceptor)
   @Get('drivers/sync-driver-season')
   @HttpCode(200)
   @ApiOperation({

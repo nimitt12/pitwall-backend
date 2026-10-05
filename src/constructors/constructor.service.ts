@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import axios from 'axios';
 import { DatabaseService } from '../database/database.service.js';
+import { upstreamGet } from '../security/upstream.js';
 
 @Injectable()
 export class ConstructorService {
@@ -9,7 +9,7 @@ export class ConstructorService {
    * @returns {Promise<Object>}
    */
   getConstructorStandings = async () => {
-    const response = await axios.get(
+    const response = await upstreamGet(
       'https://api.jolpi.ca/ergast/f1/2026/constructorstandings/?format=json',
     );
     return response.data;
@@ -31,7 +31,7 @@ export class ConstructorService {
   syncConstructorSeason = async () => {
     try {
       return await this.db.transaction(async (client) => {
-        const response = await axios.get(
+        const response = await upstreamGet(
           'https://api.jolpi.ca/ergast/f1/2026/constructorstandings/?format=json',
         );
         const standingsList = response.data.MRData.StandingsTable.StandingsLists[0];

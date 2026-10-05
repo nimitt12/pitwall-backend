@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import axios from 'axios';
 import { DatabaseService } from '../database/database.service.js';
+import { upstreamGet } from '../security/upstream.js';
 
 @Injectable()
 export class DriverService {
@@ -25,7 +25,7 @@ export class DriverService {
   syncDriverSeason = async () => {
     try {
       return await this.db.transaction(async (client) => {
-        const response = await axios.get(
+        const response = await upstreamGet(
           'https://api.jolpi.ca/ergast/f1/2026/driverstandings/?format=json',
         );
         const standingsList = response.data.MRData.StandingsTable.StandingsLists[0];

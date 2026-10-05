@@ -1,4 +1,5 @@
 require('reflect-metadata');
+process.env.JWT_SECRET ||= 'test-only-secret-not-for-production';
 const { Test } = require('@nestjs/testing');
 const { AppModule } = require('../dist/app.module.js');
 const { DatabaseService } = require('../dist/database/database.service.js');
@@ -26,7 +27,7 @@ async function createApp(db, overrides = {}) {
   }
   const module = await builder.compile();
   const app = module.createNestApplication({ logger: false, bodyParser: false });
-  const document = configureApp(app, false);
+  const document = await configureApp(app, false);
   await app.init();
   return { app, document };
 }

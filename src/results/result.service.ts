@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import axios from 'axios';
+import { Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service.js';
+import { upstreamGet } from '../security/upstream.js';
 
 @Injectable()
 export class ResultService {
@@ -15,12 +15,15 @@ export class ResultService {
         let offset = 0;
         const limit = 100; // Fetch 100 results per request
         let hasMore = true;
+        const deadline = Date.now() + 120_000;
 
         while (hasMore) {
+          if (offset >= 20_000 || Date.now() > deadline)
+            throw new Error('Upstream pagination limit exceeded');
           const url = `https://api.jolpi.ca/ergast/f1/2026/results/?format=json&limit=${limit}&offset=${offset}`;
           console.log(`Syncing results: offset ${offset}, limit ${limit}...`);
 
-          const response = await axios.get(url);
+          const response = await upstreamGet(url);
           const mrData = response.data.MRData;
           const races = mrData.RaceTable.Races;
           const total = parseInt(mrData.total);
@@ -208,12 +211,15 @@ export class ResultService {
         let offset = 0;
         const limit = 100; // Fetch 100 results per request
         let hasMore = true;
+        const deadline = Date.now() + 120_000;
 
         while (hasMore) {
+          if (offset >= 20_000 || Date.now() > deadline)
+            throw new Error('Upstream pagination limit exceeded');
           const url = `https://api.jolpi.ca/ergast/f1/2026/qualifying/?format=json&limit=${limit}&offset=${offset}`;
           console.log(`Syncing qualifying results: offset ${offset}, limit ${limit}...`);
 
-          const response = await axios.get(url);
+          const response = await upstreamGet(url);
           const mrData = response.data.MRData;
           const races = mrData.RaceTable.Races;
           const total = parseInt(mrData.total);
@@ -354,14 +360,17 @@ export class ResultService {
         let offset = 0;
         const limit = 100; // Fetch 100 results per request
         let hasMore = true;
+        const deadline = Date.now() + 120_000;
 
-        await client.query(this.SPRINT_RESULTS_DDL);
+        if (process.env.NODE_ENV !== 'production') await client.query(this.SPRINT_RESULTS_DDL);
 
         while (hasMore) {
+          if (offset >= 20_000 || Date.now() > deadline)
+            throw new Error('Upstream pagination limit exceeded');
           const url = `https://api.jolpi.ca/ergast/f1/2026/sprint/?format=json&limit=${limit}&offset=${offset}`;
           console.log(`Syncing sprint results: offset ${offset}, limit ${limit}...`);
 
-          const response = await axios.get(url);
+          const response = await upstreamGet(url);
           const mrData = response.data.MRData;
           const races = mrData.RaceTable.Races;
           const total = parseInt(mrData.total);
@@ -490,10 +499,10 @@ export class ResultService {
         const season = '2026';
         let totalCount = 0;
 
-        await client.query(this.SPRINT_QUALIFYING_DDL);
+        if (process.env.NODE_ENV !== 'production') await client.query(this.SPRINT_QUALIFYING_DDL);
 
         const sessionsUrl = `https://api.openf1.org/v1/sessions?year=${season}&session_name=Sprint%20Qualifying`;
-        const sessionsResponse = await axios.get(sessionsUrl);
+        const sessionsResponse = await upstreamGet(sessionsUrl);
         const sessions = sessionsResponse.data || [];
 
         const insertQuery = `
@@ -530,7 +539,7 @@ export class ResultService {
             `Syncing sprint qualifying: round ${round} (session ${session.session_key})...`,
           );
           const resultsUrl = `https://api.openf1.org/v1/session_result?session_key=${session.session_key}`;
-          const resultsResponse = await axios.get(resultsUrl);
+          const resultsResponse = await upstreamGet(resultsUrl);
 
           for (const item of resultsResponse.data || []) {
             if (item.position === null || item.driver_number === null) continue;
@@ -606,7 +615,19 @@ export class ResultService {
    * @param {string} round
    * @returns {Promise<Object>} { season, round, totalLaps, drivers: { [driverId]: [{ lap, position }] } }
    */
-  getLapPositions = async (season: string, round: string) => {
+  private readonly pendingLaps = new Map<string, Promise<unknown>>();
+  getLapPositions = (season: string, round: string): Promise<unknown> => {
+    const key = `${season}_${round}`;
+    const pending = this.pendingLaps.get(key);
+    if (pending) return pending;
+    if (this.pendingLaps.size >= 4)
+      throw new ServiceUnavailableException('Lap-data capacity exhausted');
+    const work = this.loadLapPositions(season, round).finally(() => this.pendingLaps.delete(key));
+    this.pendingLaps.set(key, work);
+    return work;
+  };
+
+  private loadLapPositions = async (season: string, round: string) => {
     const cacheKey = `${season}_${round}`;
     if (this.lapPositionsCache.has(cacheKey)) {
       return this.lapPositionsCache.get(cacheKey);
@@ -616,12 +637,15 @@ export class ResultService {
       const limit = 100; // API caps page size at 100 timing entries
       let offset = 0;
       let hasMore = true;
-      const drivers: Record<string, { lap: number; position: number }[]> = {};
+      const deadline = Date.now() + 120_000;
+      const drivers: Record<string, { lap: number; position: number }[]> = Object.create(null);
       let totalLaps = 0;
 
       while (hasMore) {
+        if (offset >= 20_000 || Date.now() > deadline)
+          throw new Error('Upstream pagination limit exceeded');
         const url = `https://api.jolpi.ca/ergast/f1/${season}/${round}/laps/?format=json&limit=${limit}&offset=${offset}`;
-        const response = await axios.get(url);
+        const response = await upstreamGet(url);
         const mrData = response.data.MRData;
         const races = mrData.RaceTable.Races;
         const total = parseInt(mrData.total);
@@ -649,8 +673,10 @@ export class ResultService {
         if (hasMore) await new Promise((resolve) => setTimeout(resolve, 250));
       }
 
-      const payload = { season, round, totalLaps, drivers };
+      const payload = { season, round, totalLaps, drivers: { ...drivers } };
       if (totalLaps > 0) {
+        if (this.lapPositionsCache.size >= 50)
+          this.lapPositionsCache.delete(this.lapPositionsCache.keys().next().value);
         this.lapPositionsCache.set(cacheKey, payload);
       }
       return payload;

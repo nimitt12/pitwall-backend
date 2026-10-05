@@ -1,11 +1,24 @@
-import { Controller, Get, HttpCode, HttpException, Param } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  HttpCode,
+  HttpException,
+  Param,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { AdminAuthGuard } from '../auth/admin-auth.guard.js';
+import { ExclusiveWorkInterceptor } from '../security/exclusive-work.interceptor.js';
 import { ResultService } from './result.service.js';
 
 @ApiTags('Results')
 @Controller('results')
 export class ResultController {
   constructor(private readonly resultService: ResultService) {}
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth('bearerAuth')
+  @UseInterceptors(ExclusiveWorkInterceptor)
   @Get('sync-results')
   @HttpCode(200)
   @ApiOperation({ summary: 'Sync race results' })
@@ -56,6 +69,9 @@ export class ResultController {
     }
   }
 
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth('bearerAuth')
+  @UseInterceptors(ExclusiveWorkInterceptor)
   @Get('sync-qualifying')
   @HttpCode(200)
   @ApiOperation({ summary: 'Sync qualifying results' })
@@ -92,6 +108,9 @@ export class ResultController {
     }
   }
 
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth('bearerAuth')
+  @UseInterceptors(ExclusiveWorkInterceptor)
   @Get('sync-sprint-results')
   @HttpCode(200)
   @ApiOperation({ summary: 'Sync sprint race results' })
@@ -107,6 +126,9 @@ export class ResultController {
     }
   }
 
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth('bearerAuth')
+  @UseInterceptors(ExclusiveWorkInterceptor)
   @Get('sync-sprint-qualifying')
   @HttpCode(200)
   @ApiOperation({ summary: 'Sync sprint qualifying results' })

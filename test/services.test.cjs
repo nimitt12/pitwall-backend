@@ -32,7 +32,7 @@ function database(responses = []) {
   return { db, queries };
 }
 
-it('registers with a bcrypt password and issues the existing seven-day JWT claims', async () => {
+it('registers with a bcrypt password and issues the one-hour JWT claims', async () => {
   process.env.JWT_SECRET = 'service-test-secret';
   const user = { id: 'user-1', email: 'test@example.com', is_admin: false };
   const { db, queries } = database([{ rows: [] }, { rows: [user] }]);
@@ -41,13 +41,13 @@ it('registers with a bcrypt password and issues the existing seven-day JWT claim
     password: 'secret-password',
     fullName: 'Test',
   });
-  assert.equal(result.user, user);
+  assert.deepEqual(result.user, user);
   assert.ok(await bcrypt.compare('secret-password', queries[1].values[2]));
   const claims = jwt.verify(result.token, process.env.JWT_SECRET);
   assert.equal(claims.id, user.id);
   assert.equal(claims.email, user.email);
   assert.equal(claims.is_admin, false);
-  assert.equal(claims.exp - claims.iat, 7 * 24 * 60 * 60);
+  assert.equal(claims.exp - claims.iat, 60 * 60);
   assert.equal(queries[1].values[3], 'Test');
 });
 
@@ -74,7 +74,8 @@ it('logs in with the stored password and preserves user output', async () => {
   };
   const { db } = database([{ rows: [user] }]);
   const result = await new services.authService(db).login(user.email, 'correct');
-  assert.deepEqual(result.user, user);
+  assert.deepEqual(result.user, { id: user.id, email: user.email });
+  assert.equal(result.user.password, undefined);
   assert.equal(jwt.verify(result.token, process.env.JWT_SECRET).id, user.id);
 });
 
@@ -82,19 +83,21 @@ for (const existing of [true, false]) {
   it(`Google login ${existing ? 'updates an existing' : 'creates a new'} user after token verification`, async (t) => {
     const user = { id: 'google-id', email: 'google@example.com' };
     const { db, queries } = database([{ rows: existing ? [user] : [] }, { rows: [user] }]);
+    process.env.GOOGLE_CLIENT_ID = 'test-google-client';
     const service = new services.authService(db);
     t.mock.method(service.client, 'verifyIdToken', async ({ idToken }) => {
       assert.equal(idToken, 'google-token');
       return {
         getPayload: () => ({
           sub: user.id,
+          email_verified: true,
           email: user.email,
           name: 'Google User',
           picture: 'avatar',
         }),
       };
     });
-    assert.equal((await service.googleLogin('google-token')).user, user);
+    assert.deepEqual((await service.googleLogin('google-token')).user, user);
     assert.match(queries[1].sql, existing ? /UPDATE users/ : /INSERT INTO users/);
   });
 }

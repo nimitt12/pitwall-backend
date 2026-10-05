@@ -8,7 +8,7 @@ const fixtures = require('./fixtures/express-contracts.json');
 // Recorded from the original Express server with deterministic service doubles.
 // Check both HTTP output and service arguments: matching output alone can mask
 // dropped query parameters or a controller calling the wrong service method.
-describe('Express API compatibility', () => {
+describe('API compatibility with intentional security changes', () => {
   let app, document, scenario, calls;
   const secret = 'contract-test-secret';
   const admin = {
@@ -37,6 +37,15 @@ describe('Express API compatibility', () => {
 
   before(async () => {
     process.env.JWT_SECRET = secret;
+    // Exercise contract cases without exhausting the budgets tested in security.test.cjs.
+    for (const key of [
+      'RATE_LIMIT_PUBLIC',
+      'RATE_LIMIT_AUTH',
+      'RATE_LIMIT_EXPENSIVE',
+      'RATE_LIMIT_AUTH_GLOBAL',
+    ])
+      process.env[key] = '10000';
+    process.env.CORS_ORIGINS = 'https://example.com';
     const overrides = Object.fromEntries(Object.keys(services).map((name) => [name, {}]));
     for (const item of fixtures.cases)
       for (const call of item.expected.calls) {
@@ -71,15 +80,52 @@ describe('Express API compatibility', () => {
               });
         req = req.set('Authorization', 'Bearer ' + token);
       }
-      if (item.body) req = req.send(item.body);
+      const fields =
+        item.url === '/auth/register'
+          ? ['email', 'password', 'fullName']
+          : item.url === '/auth/login'
+            ? ['email', 'password']
+            : item.url === '/auth/google'
+              ? ['idToken']
+              : item.url.startsWith('/profile/')
+                ? ['fav_constructor', 'fav_drivers']
+                : item.url === '/account/delete-request'
+                  ? ['userId', 'email', 'reason']
+                  : item.url === '/live/replay/start'
+                    ? ['path', 'name', 'speed']
+                    : item.url.startsWith('/live/replay/')
+                      ? ['speed', 'offsetMs']
+                      : null;
+      const body =
+        fields && item.body
+          ? Object.fromEntries(Object.entries(item.body).filter(([key]) => fields.includes(key)))
+          : item.body;
+      if (body) req = req.send(body);
       const response = await req;
       if (item.url === '/health') {
         assert.ok(Number.isFinite(Date.parse(response.body.timestamp)));
         response.body.timestamp = '<ISO timestamp>';
       }
       assert.equal(response.status, item.expected.status);
-      assert.deepEqual(response.body, item.expected.body);
-      assert.deepEqual(JSON.parse(JSON.stringify(calls)), item.expected.calls);
+      if (item.expected.status >= 500) {
+        assert.deepEqual(response.body, { message: 'Internal server error' });
+      } else if (item.body && Object.keys(item.body).length === 0) {
+        assert.equal(response.body.message, 'Invalid request body');
+        assert.ok(response.body.errors.length);
+      } else if (item.url.startsWith('/auth/') && item.mode !== 'success') {
+        assert.deepEqual(response.body, {
+          message:
+            item.url === '/auth/register' ? 'Unable to register account' : 'Invalid credentials',
+        });
+      } else assert.deepEqual(response.body, item.expected.body);
+      const expectedCalls = structuredClone(item.expected.calls);
+      if (fields && item.body)
+        for (const call of expectedCalls) {
+          call.args = call.args.map((arg) =>
+            JSON.stringify(arg) === JSON.stringify(item.body) ? body : arg,
+          );
+        }
+      assert.deepEqual(JSON.parse(JSON.stringify(calls)), expectedCalls);
     });
   }
 
@@ -104,13 +150,13 @@ describe('Express API compatibility', () => {
     assert.equal(response.body.info.title, 'MyPitWall API Documentation');
   });
 
-  it('preserves permissive CORS and handles preflight', async () => {
+  it('allows configured CORS origins and handles preflight', async () => {
     await request(app.getHttpServer())
       .options('/auth/login')
       .set('Origin', 'https://example.com')
       .set('Access-Control-Request-Method', 'POST')
       .expect(204)
-      .expect('Access-Control-Allow-Origin', '*');
+      .expect('Access-Control-Allow-Origin', 'https://example.com');
   });
 
   it('rejects malformed and oversized JSON without reaching services', async () => {

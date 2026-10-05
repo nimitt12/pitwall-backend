@@ -194,7 +194,7 @@ export class AdminService {
 
   /** Resolve and validate a requested table name against the whitelist. */
   getConfig = (table: string) => {
-    const cfg = this.TABLES[table];
+    const cfg = Object.hasOwn(this.TABLES, table) ? this.TABLES[table] : undefined;
     if (!cfg) throw this.httpError(400, `Unknown table: ${table}`);
     return cfg;
   };
@@ -274,7 +274,8 @@ export class AdminService {
     // Exact-match filters, e.g. season/round. Only declared columns are allowed.
     for (const [col, val] of Object.entries(filters || {})) {
       if (val === undefined || val === null || val === '') continue;
-      if (!cfg.columns[col]) throw this.httpError(400, `Unknown filter column: ${col}`);
+      if (!Object.hasOwn(cfg.columns, col) || cfg.columns[col].hidden)
+        throw this.httpError(400, `Unknown filter column: ${col}`);
       params.push(String(val));
       clauses.push(`CAST("${col}" AS TEXT) = $${params.length}`);
     }
@@ -287,7 +288,7 @@ export class AdminService {
       clauses.push(`(${conds.join(' OR ')})`);
     }
 
-    const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
+    const where = clauses.length ? `WHERE ${clauses.join(' AND ')} LIMIT 500` : '';
 
     const countRes = await this.db.query(
       `SELECT COUNT(*)::int AS total FROM "${table}" ${where}`,
@@ -315,7 +316,7 @@ export class AdminService {
    */
   distinct = async (table: string, column: string, filters: Record<string, unknown> = {}) => {
     const cfg = this.getConfig(table);
-    if (!cfg.columns[column] || cfg.columns[column].hidden) {
+    if (!Object.hasOwn(cfg.columns, column) || cfg.columns[column].hidden) {
       throw this.httpError(400, `Unknown column: ${column}`);
     }
 
@@ -323,13 +324,14 @@ export class AdminService {
     const clauses = [`"${column}" IS NOT NULL`];
     for (const [col, val] of Object.entries(filters || {})) {
       if (val === undefined || val === null || val === '') continue;
-      if (!cfg.columns[col]) throw this.httpError(400, `Unknown filter column: ${col}`);
+      if (!Object.hasOwn(cfg.columns, col) || cfg.columns[col].hidden)
+        throw this.httpError(400, `Unknown filter column: ${col}`);
       params.push(String(val));
       clauses.push(`CAST("${col}" AS TEXT) = $${params.length}`);
     }
 
     const result = await this.db.query(
-      `SELECT DISTINCT "${column}" AS value FROM "${table}" WHERE ${clauses.join(' AND ')}`,
+      `SELECT DISTINCT "${column}" AS value FROM "${table}" WHERE ${clauses.join(' AND ')} LIMIT 500`,
       params,
     );
 

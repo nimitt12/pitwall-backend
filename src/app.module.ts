@@ -10,10 +10,12 @@ import { LiveModule } from './live/live.module.js';
 import { ProfileModule } from './profile/profile.module.js';
 import { RaceModule } from './races/race.module.js';
 import { ResultModule } from './results/result.module.js';
+import { SecurityModule } from './security/security.module.js';
 import { TriviaModule } from './trivia/trivia.module.js';
 
 @Module({
   imports: [
+    SecurityModule,
     DatabaseModule,
     ConstructorModule,
     DriverModule,

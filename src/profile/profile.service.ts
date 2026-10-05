@@ -8,6 +8,7 @@ export class ProfileService {
   columnsEnsured = false;
 
   ensureColumns = async () => {
+    if (process.env.NODE_ENV === 'production') return;
     if (this.columnsEnsured) return;
     await this.db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS fav_constructor TEXT`);
     await this.db.query(

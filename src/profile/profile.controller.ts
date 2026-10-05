@@ -1,8 +1,28 @@
-import { Body, Controller, Get, HttpCode, HttpException, Param, Put } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpException,
+  Param,
+  Put,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { AuthGuard } from '../auth/auth.guard.js';
+import { ValidateBody, schemas } from '../security/input-validation.js';
 import { ProfileService } from './profile.service.js';
 
 @ApiTags('Profile')
+@UseGuards(AuthGuard)
+@ApiBearerAuth('bearerAuth')
 @Controller('profile')
 export class ProfileController {
   constructor(private readonly profileService: ProfileService) {}
@@ -26,6 +46,7 @@ export class ProfileController {
     }
   }
 
+  @ValidateBody(schemas.profile)
   @Put(':id')
   @HttpCode(200)
   @ApiOperation({ summary: "Update a user's favorite constructor and drivers" })

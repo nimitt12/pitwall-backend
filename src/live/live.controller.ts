@@ -1,6 +1,27 @@
-import { Body, Controller, Get, HttpCode, HttpException, Param, Post, Res } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpException,
+  Param,
+  Post,
+  Res,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import type { Response } from 'express';
+import { AdminAuthGuard } from '../auth/admin-auth.guard.js';
+import { ExclusiveWorkInterceptor } from '../security/exclusive-work.interceptor.js';
+import { ValidateBody, schemas } from '../security/input-validation.js';
 import { LiveTimingService } from './live-timing.service.js';
 
 @ApiTags('Live')
@@ -42,9 +63,17 @@ export class LiveController {
     });
     res.flushHeaders?.();
 
-    const send = (event: string, data: unknown) => {
-      res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+    const write = (frame: string) => {
+      if (res.destroyed || res.writableEnded) return;
+      // Disconnect lagging consumers instead of accumulating unbounded buffers.
+      if (res.writableLength > 256 * 1024) {
+        res.destroy();
+        return;
+      }
+      res.write(frame);
     };
+    const send = (event: string, data: unknown) =>
+      write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
 
     const unsubscribe = this.liveTimingService.addSubscriber({
       onShutdown: () => res.end(),
@@ -60,7 +89,7 @@ export class LiveController {
     // between the snapshot read and the listener registration.
     send('snapshot', this.liveTimingService.getState());
 
-    const ping = setInterval(() => res.write(': ping\n\n'), 15000);
+    const ping = setInterval(() => write(': ping\n\n'), 15000);
 
     res.on('close', () => {
       clearInterval(ping);
@@ -69,6 +98,8 @@ export class LiveController {
     });
   }
 
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth('bearerAuth')
   @Post('simulate/start')
   @HttpCode(200)
   @ApiOperation({
@@ -88,6 +119,8 @@ export class LiveController {
     }
   }
 
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth('bearerAuth')
   @Post('simulate/stop')
   @HttpCode(200)
   @ApiOperation({
@@ -130,6 +163,10 @@ export class LiveController {
     }
   }
 
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth('bearerAuth')
+  @ValidateBody(schemas.replay)
+  @UseInterceptors(ExclusiveWorkInterceptor)
   @Post('replay/start')
   @HttpCode(200)
   @ApiOperation({
@@ -165,6 +202,9 @@ export class LiveController {
     }
   }
 
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth('bearerAuth')
+  @ValidateBody(schemas.replayControl)
   @Post('replay/:action')
   @HttpCode(200)
   @ApiOperation({

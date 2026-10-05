@@ -1,11 +1,13 @@
 import { Body, Controller, HttpCode, HttpException, Post } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ValidateBody, schemas } from '../security/input-validation.js';
 import { AuthService } from './auth.service.js';
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+  @ValidateBody(schemas.register)
   @Post('register')
   @HttpCode(201)
   @ApiOperation({ summary: 'Register a new user' })
@@ -33,10 +35,11 @@ export class AuthController {
       return result;
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      throw new HttpException({ message: error.message }, 400);
+      throw new HttpException({ message: 'Unable to register account' }, 400);
     }
   }
 
+  @ValidateBody(schemas.login)
   @Post('login')
   @HttpCode(200)
   @ApiOperation({ summary: 'Login with email and password' })
@@ -60,10 +63,11 @@ export class AuthController {
       return result;
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      throw new HttpException({ message: error.message }, 401);
+      throw new HttpException({ message: 'Invalid credentials' }, 401);
     }
   }
 
+  @ValidateBody(schemas.google)
   @Post('google')
   @HttpCode(200)
   @ApiOperation({ summary: 'Login with Google' })
@@ -83,7 +87,7 @@ export class AuthController {
       return result;
     } catch (error) {
       if (error instanceof HttpException) throw error;
-      throw new HttpException({ message: error.message }, 401);
+      throw new HttpException({ message: 'Invalid credentials' }, 401);
     }
   }
 }

@@ -10,6 +10,7 @@ export class AccountService {
   tableEnsured = false;
 
   ensureTable = async () => {
+    if (process.env.NODE_ENV === 'production') return;
     if (this.tableEnsured) return;
     await this.db.query(`
     CREATE TABLE IF NOT EXISTS account_deletion_requests (

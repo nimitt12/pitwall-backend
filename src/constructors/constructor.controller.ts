@@ -1,5 +1,14 @@
-import { Controller, Get, HttpCode, HttpException } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  HttpCode,
+  HttpException,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { AdminAuthGuard } from '../auth/admin-auth.guard.js';
+import { ExclusiveWorkInterceptor } from '../security/exclusive-work.interceptor.js';
 import { ConstructorService } from './constructor.service.js';
 
 @ApiTags('Constructors')
@@ -36,6 +45,9 @@ export class ConstructorController {
     }
   }
 
+  @UseGuards(AdminAuthGuard)
+  @ApiBearerAuth('bearerAuth')
+  @UseInterceptors(ExclusiveWorkInterceptor)
   @Get('sync-constructor-season')
   @HttpCode(200)
   @ApiOperation({ summary: 'Sync constructor season data' })

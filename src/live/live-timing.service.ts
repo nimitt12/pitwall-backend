@@ -1,4 +1,5 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
+import { readBoundedText } from '../security/upstream.js';
 
 import { EventEmitter } from 'node:events';
 import zlib from 'node:zlib';
@@ -112,25 +113,36 @@ export class LiveTimingService implements OnModuleDestroy {
    * Array patches arrive as objects keyed by stringified index ("0", "5", ...)
    * and are applied per-index onto the existing array.
    */
-  deepMerge = (base: FeedData, patch: FeedData): FeedData => {
+  deepMerge = (base: FeedData, patch: FeedData, depth = 0): FeedData => {
+    if (depth > 32) return null;
     if (patch === null || typeof patch !== 'object' || Array.isArray(patch)) return patch;
     if (Array.isArray(base)) {
       const next = base.slice();
       for (const [key, value] of Object.entries(patch)) {
         const idx = Number(key);
-        if (Number.isInteger(idx)) next[idx] = this.deepMerge(next[idx], value);
+        if (Number.isInteger(idx) && idx >= 0 && idx < 10000)
+          next[idx] = this.deepMerge(next[idx], value, depth + 1);
       }
       return next;
     }
     const target = base && typeof base === 'object' ? { ...base } : {};
     for (const [key, value] of Object.entries(patch)) {
-      target[key] = this.deepMerge(target[key], value);
+      if (['__proto__', 'prototype', 'constructor'].includes(key)) continue;
+      target[key] = this.deepMerge(
+        Object.hasOwn(target, key) ? target[key] : undefined,
+        value,
+        depth + 1,
+      );
     }
     return target;
   };
 
   inflate = (b64: string): FeedData =>
-    JSON.parse(zlib.inflateRawSync(Buffer.from(b64, 'base64')).toString('utf8'));
+    JSON.parse(
+      zlib
+        .inflateRawSync(Buffer.from(b64, 'base64'), { maxOutputLength: 8 * 1024 * 1024 })
+        .toString('utf8'),
+    );
 
   /**
    * Single ingest path for the real feed, the simulator and archive replay:
@@ -144,6 +156,7 @@ export class LiveTimingService implements OnModuleDestroy {
     timestamp: string | null = null,
     { replace = false, silent = false } = {},
   ) => {
+    if (!this.TOPICS.includes(topic) && !this.TOPICS.includes(`${topic}.z`)) return;
     let name = topic;
     let value = data;
     if (name.endsWith('.z')) {
@@ -179,14 +192,15 @@ export class LiveTimingService implements OnModuleDestroy {
   negotiate = async () => {
     const res = await fetch(`${this.F1_BASE}/negotiate?negotiateVersion=1`, {
       method: 'POST',
-      signal: this.abortController.signal,
+      signal: AbortSignal.any([this.abortController.signal, AbortSignal.timeout(15_000)]),
+      redirect: 'error',
       headers: {
         'User-Agent': 'BestHTTP',
         ...(this.F1_AUTH_TOKEN ? { Authorization: `Bearer ${this.F1_AUTH_TOKEN}` } : {}),
       },
     });
     if (!res.ok) throw new Error(`negotiate failed: HTTP ${res.status}`);
-    const body = await res.json();
+    const body = JSON.parse(await readBoundedText(res, 64 * 1024));
     // The AWSALB affinity cookies from negotiate must be echoed on the socket.
     const cookie = (res.headers.getSetCookie ? res.headers.getSetCookie() : [])
       .map((c) => c.split(';')[0])
@@ -245,7 +259,7 @@ export class LiveTimingService implements OnModuleDestroy {
     } catch (err) {
       if (gen !== this.generation || this.destroyed) return;
       console.error('Live timing: negotiate error:', err.message);
-      this.setStatus('error', err.message);
+      this.setStatus('error', 'Live feed unavailable');
       this.scheduleReconnect(gen);
       return;
     }
@@ -256,6 +270,8 @@ export class LiveTimingService implements OnModuleDestroy {
       (this.F1_AUTH_TOKEN ? `&access_token=${encodeURIComponent(this.F1_AUTH_TOKEN)}` : '');
 
     const socket = (this.socket = new WebSocket(`${this.F1_WS_URL}?${qs}`, {
+      maxPayload: 8 * 1024 * 1024,
+      handshakeTimeout: 10_000,
       headers: {
         'User-Agent': 'BestHTTP',
         'Accept-Encoding': 'gzip,identity',
@@ -1175,7 +1191,8 @@ export class LiveTimingService implements OnModuleDestroy {
     if (cached && Date.now() - cached.fetchedAt < ttl) return cached.data;
     const res = await fetch(`${this.F1_STATIC_BASE}${y}/Index.json`, {
       headers: this.STATIC_HEADERS,
-      signal: this.abortController.signal,
+      signal: AbortSignal.any([this.abortController.signal, AbortSignal.timeout(15_000)]),
+      redirect: 'error',
     });
     if (!res.ok) {
       const err: Error & { status?: number } = new Error(
@@ -1184,7 +1201,7 @@ export class LiveTimingService implements OnModuleDestroy {
       err.status = res.status === 404 ? 404 : 502;
       throw err;
     }
-    const data = JSON.parse(this.stripBom(await res.text()));
+    const data = JSON.parse(this.stripBom(await readBoundedText(res)));
     this.archiveCache.set(y, { data, fetchedAt: Date.now() });
     return data;
   };
@@ -1193,6 +1210,7 @@ export class LiveTimingService implements OnModuleDestroy {
 
   // { streams, virtualMs, durationMs, speed, paused, interval, lastTickAt, gen }
   replayGen = 0;
+  private replayAbort: AbortController | null = null;
 
   LINE_RE = /^(\d+):(\d{2}):(\d{2})\.(\d{3})/;
 
@@ -1227,6 +1245,8 @@ export class LiveTimingService implements OnModuleDestroy {
 
   /** Tear down any running replay and free the loaded archive. */
   releaseReplay = () => {
+    this.replayAbort?.abort();
+    this.replayAbort = null;
     this.replayGen += 1;
     if (this.replay?.interval) clearInterval(this.replay.interval);
     this.replay = null;
@@ -1310,7 +1330,11 @@ export class LiveTimingService implements OnModuleDestroy {
    * pipeline. Resolves once the streams are downloaded and playback begins.
    */
   startReplay = async (path: string, { name = '', speed = 1 } = {}) => {
-    if (!path || !/^\d{4}\/[^.]+\/$/.test(path)) {
+    if (
+      typeof path !== 'string' ||
+      path.length > 300 ||
+      !/^\d{4}\/[A-Za-z0-9_-]+\/[A-Za-z0-9_-]+\/$/.test(path)
+    ) {
       const err: Error & { status?: number } = new Error('Invalid session path');
       err.status = 400;
       throw err;
@@ -1325,6 +1349,7 @@ export class LiveTimingService implements OnModuleDestroy {
     }
     this.releaseReplay();
     const gen = this.replayGen;
+    const replayAbort = (this.replayAbort = new AbortController());
 
     this.state.replay = { path, name, speed, paused: false, loading: true };
     this.setStatus('connected');
@@ -1335,10 +1360,15 @@ export class LiveTimingService implements OnModuleDestroy {
         try {
           const res = await fetch(`${this.F1_STATIC_BASE}${path}${topic}.jsonStream`, {
             headers: this.STATIC_HEADERS,
-            signal: this.abortController.signal,
+            signal: AbortSignal.any([
+              this.abortController.signal,
+              replayAbort.signal,
+              AbortSignal.timeout(15_000),
+            ]),
+            redirect: 'error',
           });
           if (!res.ok) return null;
-          return { topic, lines: this.parseStream(await res.text()), idx: 0 };
+          return { topic, lines: this.parseStream(await readBoundedText(res)), idx: 0 };
         } catch {
           return null; // topic not recorded for this session
         }

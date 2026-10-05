@@ -1,21 +1,21 @@
 # API route inventory
 
-All existing paths are preserved without a global prefix. Admin routes require a valid Bearer JWT and a current database admin flag. Swagger documentation is at `/api-docs`.
+All existing paths are preserved without a global prefix. Admin routes require a valid Bearer JWT and a current database admin flag. Swagger documentation is at `/api-docs` outside production. All requests are rate limited; see [security guidance](security.md). Owner routes require a valid JWT, a current database user, and a matching user ID.
 
 | Method | Path | Access |
 | --- | --- | --- |
 | GET | `/constructors` | Public |
 | GET | `/constructors/get-all-constructors` | Public |
-| GET | `/constructors/sync-constructor-season` | Public |
+| GET | `/constructors/sync-constructor-season` | Admin |
 | GET | `/constructors/get-all-constructors-season-rankings` | Public |
 | GET | `/drivers/get-all-drivers` | Public |
-| GET | `/drivers/sync-driver-season` | Public |
+| GET | `/drivers/sync-driver-season` | Admin |
 | GET | `/drivers/get-all-drivers-season-rankings` | Public |
 | GET | `/drivers/compare/:season/:driverId1/:driverId2` | Public |
-| GET | `/results/sync-results` | Public |
-| GET | `/results/sync-qualifying` | Public |
-| GET | `/results/sync-sprint-results` | Public |
-| GET | `/results/sync-sprint-qualifying` | Public |
+| GET | `/results/sync-results` | Admin |
+| GET | `/results/sync-qualifying` | Admin |
+| GET | `/results/sync-sprint-results` | Admin |
+| GET | `/results/sync-sprint-qualifying` | Admin |
 | GET | `/results/get-all-results/:season/:round` | Public |
 | GET | `/results/get-all-qualifying-results/:season/:round` | Public |
 | GET | `/results/get-all-sprint-results/:season/:round` | Public |
@@ -35,16 +35,16 @@ All existing paths are preserved without a global prefix. Admin routes require a
 | GET | `/admin/:table/:id` | Admin |
 | PUT | `/admin/:table/:id` | Admin |
 | DELETE | `/admin/:table/:id` | Admin |
-| GET | `/profile/:id` | Public |
-| PUT | `/profile/:id` | Public |
+| GET | `/profile/:id` | Owner |
+| PUT | `/profile/:id` | Owner |
 | GET | `/live/state` | Public |
 | GET | `/live/stream` | Public |
-| POST | `/live/simulate/start` | Public |
-| POST | `/live/simulate/stop` | Public |
+| POST | `/live/simulate/start` | Admin |
+| POST | `/live/simulate/stop` | Admin |
 | GET | `/live/archive/:year` | Public |
-| POST | `/live/replay/start` | Public |
-| POST | `/live/replay/:action` | Public |
-| POST | `/account/delete-request` | Public |
+| POST | `/live/replay/start` | Admin |
+| POST | `/live/replay/:action` | Admin |
+| POST | `/account/delete-request` | Owner |
 | GET | `/health` | Public |
 | GET | `/get-all-drivers` | Public |
-| GET | `/db-test` | Public |
+| GET | `/db-test` | Admin |

@@ -5,13 +5,13 @@ const { tmpdir } = require('node:os');
 const path = require('node:path');
 
 it(
-  'starts the production entrypoint and shuts down on SIGTERM with an active simulator',
+  'starts the production entrypoint and shuts down on SIGTERM with protected live controls',
   { timeout: 15000 },
   async (t) => {
     // A temporary working directory prevents this test from reading the real .env.
     const child = spawn(process.execPath, [path.resolve(__dirname, '../dist/main.js')], {
       cwd: tmpdir(),
-      env: { ...process.env, PORT: '0' },
+      env: { ...process.env, NODE_ENV: 'test', PORT: '0', JWT_SECRET: 'bootstrap-test-secret' },
       stdio: ['ignore', 'pipe', 'pipe'],
     });
     t.after(() => {
@@ -42,7 +42,7 @@ it(
     assert.equal(health.status, 200);
     assert.equal((await health.json()).status, 'UP');
     const simulated = await fetch(base + '/live/simulate/start', { method: 'POST' });
-    assert.equal(simulated.status, 200);
+    assert.equal(simulated.status, 401);
     child.kill('SIGTERM');
     const result = await exited;
     assert.ok(result.code === 0 || result.signal === 'SIGTERM');

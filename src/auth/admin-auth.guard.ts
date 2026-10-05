@@ -2,6 +2,7 @@ import { CanActivate, ExecutionContext, HttpException, Injectable, Logger } from
 import type { Request } from 'express';
 import jwt from 'jsonwebtoken';
 import { DatabaseService } from '../database/database.service.js';
+import { verifyToken } from './token.js';
 
 export interface AdminUser {
   id: string;
@@ -29,7 +30,7 @@ export class AdminAuthGuard implements CanActivate {
     }
     let decoded: jwt.JwtPayload;
     try {
-      decoded = jwt.verify(header.split(' ')[1], process.env.JWT_SECRET!) as jwt.JwtPayload;
+      decoded = verifyToken(header.slice(7));
     } catch {
       throw new HttpException({ error: 'Invalid or expired session' }, 401);
     }

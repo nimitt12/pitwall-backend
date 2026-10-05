@@ -1,11 +1,16 @@
-import { Body, Controller, HttpCode, HttpException, Post } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, HttpCode, HttpException, Post, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { AuthGuard } from '../auth/auth.guard.js';
+import { ValidateBody, schemas } from '../security/input-validation.js';
 import { AccountService } from './account.service.js';
 
 @ApiTags('Account')
+@UseGuards(AuthGuard)
+@ApiBearerAuth('bearerAuth')
 @Controller('account')
 export class AccountController {
   constructor(private readonly accountService: AccountService) {}
+  @ValidateBody(schemas.deletion)
   @Post('delete-request')
   @HttpCode(201)
   @ApiOperation({ summary: 'Request deletion of an account and its associated data' })

@@ -2,6 +2,7 @@ const { it } = require('node:test');
 const assert = require('node:assert/strict');
 const http = require('node:http');
 const request = require('supertest');
+const jwt = require('jsonwebtoken');
 const { createApp, services } = require('./helpers.cjs');
 
 async function stream(url) {
@@ -54,12 +55,18 @@ it(
   'streams real simulator events and closes active SSE responses on Nest shutdown',
   { timeout: 10000 },
   async (t) => {
-    const { app } = await createApp({ query: async () => ({ rows: [] }) });
+    const { app } = await createApp({
+      query: async () => ({ rows: [{ id: 'admin', is_admin: true }] }),
+    });
     t.after(() => app.close());
     await app.listen(0, '127.0.0.1');
     const base = await app.getUrl();
     await request(app.getHttpServer())
       .post('/live/simulate/start')
+      .set(
+        'Authorization',
+        'Bearer ' + jwt.sign({ id: 'admin' }, process.env.JWT_SECRET, { expiresIn: 3600 }),
+      )
       .expect(200)
       .expect({ status: 'Simulation running', simulated: true });
     const feed = await stream(base + '/live/stream');
