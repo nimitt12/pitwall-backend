@@ -66,6 +66,7 @@ it(
       NODE_ENV: 'production',
       JWT_SECRET: 'test-only-redis-production-secret-123456789',
       CORS_ORIGINS: 'https://pitwall.example',
+      REDIS_ENABLED: 'true',
       REDIS_URL: `redis://127.0.0.1:${port}`,
       RATE_LIMIT_PUBLIC: '5',
     });

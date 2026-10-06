@@ -23,7 +23,8 @@ The default port is **8080**. Configuration is loaded from `.env` at startup:
 | `JWT_TTL_SECONDS` | New token lifetime; defaults to one hour |
 | `GOOGLE_CLIENT_ID` | Google ID-token audience |
 | `CORS_ORIGINS` | Exact browser origins; HTTPS required in production |
-| `REDIS_URL` | Shared rate-limit storage; required in production |
+| `REDIS_ENABLED` | Enables shared Redis rate-limit storage; defaults to `false` |
+| `REDIS_URL` | Redis connection URL; required when `REDIS_ENABLED=true` |
 | `TRUST_PROXY` | Actual proxy IPs/CIDRs; unset for direct access |
 | `PG_POOL_MAX` | Per-instance database connections; defaults to 10 |
 | `PG_SSL_CA`, `PG_SSL_CA_FILE` | Optional provider CA override for verified TLS |
@@ -45,7 +46,7 @@ npm run security:check # dependency audit, typecheck and tests
 npm run test:redis   # Redis integration test; needs redis-server or REDIS_SERVER_BIN
 ```
 
-For production, build before installing only production dependencies (or use a separate build stage), then run `npm run start:prod`. This sets `NODE_ENV=production` and refuses unsafe/missing secret, CORS, or Redis configuration. The former `node server.js` entrypoint is replaced by `node dist/main.js`. `SIGINT`/`SIGTERM` close the database pool, SSE streams, WebSocket connection, replay/simulator timers, and pending live-feed fetches.
+For production, build before installing only production dependencies (or use a separate build stage), then run `npm run start:prod`. This sets `NODE_ENV=production` and refuses unsafe secret, CORS, TLS, or enabled Redis configuration. The former `node server.js` entrypoint is replaced by `node dist/main.js`. `SIGINT`/`SIGTERM` close the database pool, SSE streams, WebSocket connection, replay/simulator timers, and pending live-feed fetches.
 
 ## API
 
@@ -69,4 +70,4 @@ Each feature has a Nest module, controller, and injectable service under `src/<f
 
 The test suite includes 146 HTTP cases captured from the original Express app, adapted for intentional security changes, plus adversarial security tests, distributed Redis coverage, route/documentation coverage, authentication, SQL/service behavior, transactions, feed merging, simulation, replay controls, and real local SSE connections and shutdown. Tests use database and external-provider doubles and do not modify a configured database or need a `.env` file. Running tests requires permission to open local loopback sockets. Live Google authentication and upstream-provider availability still depend on valid credentials and the external services.
 
-Live state is process-local: route all `/live/*` requests to one dedicated instance. Ordinary API replicas share PostgreSQL and Redis; see the security guide before scaling sync jobs or live timing.
+Live state is process-local: route all `/live/*` requests to one dedicated instance. Ordinary API replicas share PostgreSQL and can share rate limits through optional Redis; see the security guide before scaling sync jobs or live timing.

@@ -8,7 +8,7 @@ import type { Request, RequestHandler } from 'express';
 import { MemoryStore, rateLimit, type Store } from 'express-rate-limit';
 import { RedisStore } from 'rate-limit-redis';
 import { createClient } from 'redis';
-import { integerSetting } from './config.js';
+import { booleanSetting, integerSetting } from './config.js';
 
 @Injectable()
 export class RateLimitService implements OnApplicationShutdown {
@@ -16,7 +16,7 @@ export class RateLimitService implements OnApplicationShutdown {
   private stores: Store[] = [];
 
   async configure(): Promise<RequestHandler[]> {
-    if (process.env.REDIS_URL) {
+    if (booleanSetting('REDIS_ENABLED', false)) {
       let hasConnected = false;
       this.client = createClient({
         url: process.env.REDIS_URL,

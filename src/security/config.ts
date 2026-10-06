@@ -6,8 +6,17 @@ export function integerSetting(name: string, fallback: number, min = 1, max = 1_
   return value;
 }
 
+export function booleanSetting(name: string, fallback: boolean) {
+  const raw = process.env[name];
+  if (raw === undefined) return fallback;
+  if (raw === 'true') return true;
+  if (raw === 'false') return false;
+  throw new Error(`${name} must be either true or false`);
+}
+
 export function validateSecurityConfig() {
   const production = process.env.NODE_ENV === 'production';
+  const redisEnabled = booleanSetting('REDIS_ENABLED', false);
   if (
     !process.env.JWT_SECRET ||
     (production &&
@@ -20,8 +29,8 @@ export function validateSecurityConfig() {
   }
   if (production && !process.env.CORS_ORIGINS)
     throw new Error('CORS_ORIGINS is required in production');
-  if (production && !process.env.REDIS_URL)
-    throw new Error('REDIS_URL is required in production for shared rate limits');
+  if (redisEnabled && !process.env.REDIS_URL)
+    throw new Error('REDIS_URL is required when REDIS_ENABLED=true');
   if (production && process.env.PG_SSL === 'false')
     throw new Error('PostgreSQL TLS is required in production');
   if (
@@ -45,5 +54,5 @@ export function validateSecurityConfig() {
       throw new Error('CORS_ORIGINS must contain exact origins (HTTPS in production)');
     }
   }
-  return { production, origins };
+  return { production, origins, redisEnabled };
 }

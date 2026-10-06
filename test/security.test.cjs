@@ -7,6 +7,7 @@ const zlib = require('node:zlib');
 const { createApp, services } = require('./helpers.cjs');
 const { validateSecurityConfig } = require('../dist/security/config.js');
 const { DatabaseService } = require('../dist/database/database.service.js');
+const { RateLimitService } = require('../dist/security/rate-limit.service.js');
 const { readBoundedText } = require('../dist/security/upstream.js');
 
 function env(t, changes) {
@@ -363,6 +364,7 @@ it('fails closed on unsafe production configuration', (t) => {
     NODE_ENV: 'production',
     JWT_SECRET: 'x'.repeat(40),
     CORS_ORIGINS: 'https://pitwall.example',
+    REDIS_ENABLED: 'true',
     REDIS_URL: 'redis://127.0.0.1:6379',
     PG_SSL: undefined,
     TRUST_PROXY: undefined,
@@ -382,6 +384,31 @@ it('fails closed on unsafe production configuration', (t) => {
     if (saved === undefined) delete process.env[key];
     else process.env[key] = saved;
   }
+  process.env.REDIS_ENABLED = 'invalid';
+  assert.throws(validateSecurityConfig, /REDIS_ENABLED/);
+});
+it('allows production to use in-memory rate limits when Redis is disabled', (t) => {
+  env(t, {
+    NODE_ENV: 'production',
+    JWT_SECRET: 'x'.repeat(40),
+    CORS_ORIGINS: 'https://pitwall.example',
+    REDIS_ENABLED: 'false',
+    REDIS_URL: undefined,
+    PG_SSL: undefined,
+    TRUST_PROXY: undefined,
+  });
+  const config = validateSecurityConfig();
+  assert.equal(config.production, true);
+  assert.equal(config.redisEnabled, false);
+});
+it('uses memory rate limits when Redis is disabled even if a URL is present', async (t) => {
+  env(t, {
+    REDIS_ENABLED: 'false',
+    REDIS_URL: 'redis://127.0.0.1:1',
+  });
+  const service = new RateLimitService();
+  t.after(() => service.onApplicationShutdown());
+  assert.equal((await service.configure()).length, 2);
 });
 it('does not return password hashes or internal fields from registration', async () => {
   let count = 0;

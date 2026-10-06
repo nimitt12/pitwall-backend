@@ -34,7 +34,7 @@ SQL values remain parameterized. Admin SQL identifiers remain server-owned allow
 
 ## Production configuration
 
-`npm run start:prod` explicitly sets `NODE_ENV=production`. Startup requires a non-placeholder JWT secret of at least 32 characters, HTTPS `CORS_ORIGINS`, and `REDIS_URL`. Redis must be reachable at startup; unavailable rate-limit storage returns 503, never unrestricted traffic. The client reconnects after runtime outages and bounds command queues/timeouts. Do not expose Redis publicly; use authentication, private networking and TLS where supported.
+`npm run start:prod` explicitly sets `NODE_ENV=production`. Startup requires a non-placeholder JWT secret of at least 32 characters and HTTPS `CORS_ORIGINS`. Redis is optional and disabled by default. Set `REDIS_ENABLED=true` and provide `REDIS_URL` to share rate-limit counters across instances. When enabled, Redis must be reachable at startup; unavailable rate-limit storage returns 503, never unrestricted traffic. The client reconnects after runtime outages and bounds command queues/timeouts. Do not expose Redis publicly; use authentication, private networking and TLS where supported.
 
 Generate a new JWT secret with `openssl rand -hex 32`. Rotate any database password or JWT secret exposed in logs, chat, or source control. JWT secret rotation invalidates all existing sessions. `.env` is ignored and was not changed by this review.
 
@@ -68,9 +68,9 @@ Use a dedicated application database role with only the required SELECT/INSERT/U
 | Lap cache / concurrent distinct lap fetches | 50 races / 4 | Code constants |
 | SSE queued-output threshold | 256 KiB; lagging clients disconnected | Code constant |
 
-Limits count IPv6 subnets, preventing trivial per-address rotation. Rate-limited responses include `Retry-After` and standard `RateLimit` headers. Aggregate limits can affect users sharing NAT; tune them with measured traffic and keep edge protection in place. Memory storage is only a development fallback. All API replicas must share the same Redis deployment and consistent settings. Configure Redis memory limits/monitoring so counters are not silently evicted under normal traffic.
+Limits count IPv6 subnets, preventing trivial per-address rotation. Rate-limited responses include `Retry-After` and standard `RateLimit` headers. Aggregate limits can affect users sharing NAT; tune them with measured traffic and keep edge protection in place. With `REDIS_ENABLED=false`, counters are stored in each process and reset on restart. This is suitable for a single instance, but replicas do not share a global budget. Multi-instance deployments should enable Redis on every replica with the same deployment and consistent settings. Configure Redis memory limits/monitoring so counters are not silently evicted under normal traffic.
 
-Stateless API routes can run across replicas with shared PostgreSQL and Redis. Total pool usage is `replicas × PG_POOL_MAX`; leave capacity for migrations, administration and provider limits. Local concurrency limits multiply by replica count. Authentication's global Redis budget remains shared.
+Stateless API routes can run across replicas with shared PostgreSQL. Total pool usage is `replicas × PG_POOL_MAX`; leave capacity for migrations, administration and provider limits. Local concurrency and in-memory rate limits multiply by replica count. When Redis is enabled, authentication's global budget and client counters remain shared.
 
 Live timing, simulation and replay state remain in process memory. Route **all `/live/*` traffic to one dedicated instance** to preserve one shared session. Sticky sessions alone do not synchronize separate instances. Route admin synchronization jobs to one instance too; their concurrency gate is per process. For larger deployments, move synchronization to a durable worker queue and distribute live snapshots/events with a shared event bus before scaling those features horizontally. This review does not claim to have implemented that architecture or load-tested a target throughput.
 
