@@ -34,7 +34,7 @@ SQL values remain parameterized. Admin SQL identifiers remain server-owned allow
 
 ## Production configuration
 
-`npm run start:prod` explicitly sets `NODE_ENV=production`. Startup requires a non-placeholder JWT secret of at least 32 characters and HTTPS `CORS_ORIGINS`. Redis is optional and disabled by default. Set `REDIS_ENABLED=true` and provide `REDIS_URL` to share rate-limit counters across instances. When enabled, Redis must be reachable at startup; unavailable rate-limit storage returns 503, never unrestricted traffic. The client reconnects after runtime outages and bounds command queues/timeouts. Do not expose Redis publicly; use authentication, private networking and TLS where supported.
+`npm run start:prod` explicitly sets `NODE_ENV=production`. Startup requires a non-placeholder JWT secret of at least 32 characters and exact HTTP or HTTPS `CORS_ORIGINS`. Redis is optional and disabled by default. Set `REDIS_ENABLED=true` and provide `REDIS_URL` to share rate-limit counters across instances. When enabled, Redis must be reachable at startup; unavailable rate-limit storage returns 503, never unrestricted traffic. The client reconnects after runtime outages and bounds command queues/timeouts. Do not expose Redis publicly; use authentication, private networking and TLS where supported.
 
 Generate a new JWT secret with `openssl rand -hex 32`. Rotate any database password or JWT secret exposed in logs, chat, or source control. JWT secret rotation invalidates all existing sessions. `.env` is ignored and was not changed by this review.
 

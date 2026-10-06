@@ -46,12 +46,8 @@ export function validateSecurityConfig() {
     .map((v) => v.trim());
   for (const origin of origins) {
     const parsed = new URL(origin);
-    if (
-      !['http:', 'https:'].includes(parsed.protocol) ||
-      parsed.origin !== origin ||
-      (production && parsed.protocol !== 'https:')
-    ) {
-      throw new Error('CORS_ORIGINS must contain exact origins (HTTPS in production)');
+    if (!['http:', 'https:'].includes(parsed.protocol) || parsed.origin !== origin) {
+      throw new Error('CORS_ORIGINS must contain exact HTTP or HTTPS origins');
     }
   }
   return { production, origins, redisEnabled };

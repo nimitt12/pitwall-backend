@@ -401,6 +401,17 @@ it('allows production to use in-memory rate limits when Redis is disabled', (t) 
   assert.equal(config.production, true);
   assert.equal(config.redisEnabled, false);
 });
+it('allows exact HTTP origins in production', (t) => {
+  env(t, {
+    NODE_ENV: 'production',
+    JWT_SECRET: 'x'.repeat(40),
+    CORS_ORIGINS: 'http://pitwall.example:8080',
+    REDIS_ENABLED: 'false',
+    PG_SSL: undefined,
+    TRUST_PROXY: undefined,
+  });
+  assert.deepEqual(validateSecurityConfig().origins, ['http://pitwall.example:8080']);
+});
 it('uses memory rate limits when Redis is disabled even if a URL is present', async (t) => {
   env(t, {
     REDIS_ENABLED: 'false',

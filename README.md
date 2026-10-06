@@ -22,7 +22,7 @@ The default port is **8080**. Configuration is loaded from `.env` at startup:
 | `JWT_SECRET` | Random signing secret; production requires at least 32 characters |
 | `JWT_TTL_SECONDS` | New token lifetime; defaults to one hour |
 | `GOOGLE_CLIENT_ID` | Google ID-token audience |
-| `CORS_ORIGINS` | Exact browser origins; HTTPS required in production |
+| `CORS_ORIGINS` | Exact HTTP or HTTPS browser origins |
 | `REDIS_ENABLED` | Enables shared Redis rate-limit storage; defaults to `false` |
 | `REDIS_URL` | Redis connection URL; required when `REDIS_ENABLED=true` |
 | `TRUST_PROXY` | Actual proxy IPs/CIDRs; unset for direct access |
