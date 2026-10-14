@@ -527,7 +527,7 @@ it('coalesces lap fetches, bounds the cache, and releases pending work', async (
     service.getLapPositions('2026', '1'),
     service.getLapPositions('2026', '1'),
   ]);
-  assert.equal(calls, 1);
+  assert.equal(calls, 2);
   assert.equal(a, b);
   assert.equal(service.lapPositionsCache.size, 50);
   assert.equal(service.pendingLaps.size, 0);

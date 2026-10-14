@@ -87,7 +87,7 @@ export class InputValidationPipe implements PipeTransform {
         if (key === 'round' && (!/^\d{1,2}$/.test(item) || +item < 1 || +item > 30))
           throw new BadRequestException('Invalid round');
         if (
-          ['id', 'driverId1', 'driverId2', 'table', 'column'].includes(key) &&
+          ['id', 'driverId1', 'driverId2', 'circuitId', 'table', 'column'].includes(key) &&
           !idSchema.safeParse(item).success
         )
           throw new BadRequestException('Invalid identifier');

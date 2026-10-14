@@ -91,7 +91,7 @@ export class RateLimitService implements OnApplicationShutdown {
         if (route.startsWith('/auth/'))
           return auth(req, res, (error) => (error ? next(error) : authBudget(req, res, next)));
         if (
-          /\/sync-|^\/live\/(replay|simulate|archive)|^\/results\/get-lap-positions|^\/constructors$|^\/account\//.test(
+          /\/sync-|^\/live\/(replay|simulate|archive)|^\/results\/get-lap-positions|^\/statistics\/circuits|^\/constructors$|^\/account\//.test(
             route,
           )
         ) {

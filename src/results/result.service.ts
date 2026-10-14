@@ -11,6 +11,7 @@ export class ResultService {
   syncResults = async () => {
     try {
       return await this.db.transaction(async (client) => {
+        await client.query('ALTER TABLE results ADD COLUMN IF NOT EXISTS fastest_lap_speed TEXT');
         let totalCount = 0;
         let offset = 0;
         const limit = 100; // Fetch 100 results per request
@@ -36,9 +37,9 @@ export class ResultService {
           const insertQuery = `
                 INSERT INTO results (
                     id, season, round, driver_number, position, points, grid, laps, status, 
-                    time, fastest_lap, fastest_lap_rank, fastest_lap_time
+                    time, fastest_lap, fastest_lap_rank, fastest_lap_time, fastest_lap_speed
                 )
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
                 ON CONFLICT (id) DO UPDATE
                 SET 
                     driver_number = EXCLUDED.driver_number,
@@ -51,6 +52,7 @@ export class ResultService {
                     fastest_lap = EXCLUDED.fastest_lap,
                     fastest_lap_rank = EXCLUDED.fastest_lap_rank,
                     fastest_lap_time = EXCLUDED.fastest_lap_time,
+                    fastest_lap_speed = EXCLUDED.fastest_lap_speed,
                     updated_at = NOW()
             `;
 
@@ -77,6 +79,9 @@ export class ResultService {
                 item.FastestLap ? item.FastestLap.lap : null,
                 item.FastestLap ? item.FastestLap.rank : null,
                 item.FastestLap && item.FastestLap.Time ? item.FastestLap.Time.time : null,
+                item.FastestLap && item.FastestLap.AverageSpeed
+                  ? item.FastestLap.AverageSpeed.speed
+                  : null,
               ];
 
               await client.query(insertQuery, values);
@@ -638,7 +643,10 @@ export class ResultService {
       let offset = 0;
       let hasMore = true;
       const deadline = Date.now() + 120_000;
-      const drivers: Record<string, { lap: number; position: number }[]> = Object.create(null);
+      const drivers: Record<
+        string,
+        { lap: number; position: number; time: string | null; timeMs: number | null }[]
+      > = Object.create(null);
       let totalLaps = 0;
 
       while (hasMore) {
@@ -663,6 +671,8 @@ export class ResultService {
             drivers[timing.driverId].push({
               lap: lapNumber,
               position: parseInt(timing.position),
+              time: typeof timing.time === 'string' ? timing.time : null,
+              timeMs: this.durationMs(timing.time),
             });
           }
         }
@@ -673,7 +683,39 @@ export class ResultService {
         if (hasMore) await new Promise((resolve) => setTimeout(resolve, 250));
       }
 
-      const payload = { season, round, totalLaps, drivers: { ...drivers } };
+      await new Promise((resolve) => setTimeout(resolve, 260));
+      const pitStops: {
+        driverId: string;
+        lap: number;
+        stop: number;
+        time: string | null;
+        duration: string | null;
+        durationMs: number | null;
+      }[] = [];
+      let pitOffset = 0;
+      let pitTotal = 1;
+      while (pitOffset < pitTotal) {
+        if (pitOffset >= 2000 || Date.now() > deadline)
+          throw new Error('Pit-stop pagination limit exceeded');
+        const url = `https://api.jolpi.ca/ergast/f1/${season}/${round}/pitstops/?format=json&limit=${limit}&offset=${pitOffset}`;
+        const response = await upstreamGet(url);
+        const mrData = response.data.MRData;
+        pitTotal = parseInt(mrData.total) || 0;
+        for (const stop of mrData.RaceTable?.Races?.[0]?.PitStops || []) {
+          pitStops.push({
+            driverId: stop.driverId,
+            lap: parseInt(stop.lap),
+            stop: parseInt(stop.stop),
+            time: typeof stop.time === 'string' ? stop.time : null,
+            duration: typeof stop.duration === 'string' ? stop.duration : null,
+            durationMs: this.durationMs(stop.duration),
+          });
+        }
+        pitOffset += limit;
+        if (pitOffset < pitTotal) await new Promise((resolve) => setTimeout(resolve, 260));
+      }
+
+      const payload = { season, round, totalLaps, drivers: { ...drivers }, pitStops };
       if (totalLaps > 0) {
         if (this.lapPositionsCache.size >= 50)
           this.lapPositionsCache.delete(this.lapPositionsCache.keys().next().value);
@@ -685,6 +727,14 @@ export class ResultService {
       throw error;
     }
   };
+
+  private durationMs(value: unknown) {
+    if (typeof value !== 'string' || !value) return null;
+    const parts = value.split(':').map(Number);
+    if (parts.some((part) => !Number.isFinite(part))) return null;
+    const seconds = parts.length === 2 ? parts[0] * 60 + parts[1] : parts[0];
+    return Math.round(seconds * 1000);
+  }
 
   constructor(private readonly db: DatabaseService) {}
 }

@@ -15,7 +15,7 @@ export function concurrencyLimit(): RequestHandler {
     const path = req.path.toLowerCase().replace(/\/+$/, '');
     const stream = path === '/live/stream';
     const work =
-      /\/sync-|^\/live\/replay\/start$|^\/results\/get-lap-positions|^\/live\/archive|^\/constructors$/.test(
+      /\/sync-|^\/live\/replay\/start$|^\/results\/get-lap-positions|^\/statistics\/circuits|^\/live\/archive|^\/constructors$/.test(
         path,
       );
     const key = ipKeyGenerator(req.ip || req.socket.remoteAddress || 'unknown');

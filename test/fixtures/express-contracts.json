@@ -175,6 +175,30 @@
     {
       "method": "get",
       "path": "/db-test"
+    },
+    {
+      "method": "get",
+      "path": "/statistics/statuses"
+    },
+    {
+      "method": "get",
+      "path": "/statistics/championship/:season"
+    },
+    {
+      "method": "get",
+      "path": "/statistics/qualifying/:season"
+    },
+    {
+      "method": "get",
+      "path": "/statistics/speed/:season"
+    },
+    {
+      "method": "get",
+      "path": "/statistics/circuits"
+    },
+    {
+      "method": "get",
+      "path": "/statistics/circuits/:circuitId"
     }
   ],
   "cases": [

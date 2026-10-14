@@ -23,6 +23,12 @@ All existing paths are preserved without a global prefix. Admin routes require a
 | GET | `/results/get-lap-positions/:season/:round` | Public |
 | GET | `/results/get-stats-overall/:season` | Public |
 | GET | `/races` | Public |
+| GET | `/statistics/statuses` | Public |
+| GET | `/statistics/championship/:season` | Public |
+| GET | `/statistics/qualifying/:season` | Public |
+| GET | `/statistics/speed/:season` | Public |
+| GET | `/statistics/circuits` | Public |
+| GET | `/statistics/circuits/:circuitId` | Public |
 | GET | `/trivia` | Public |
 | POST | `/auth/register` | Public |
 | POST | `/auth/login` | Public |

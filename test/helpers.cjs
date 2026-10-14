@@ -15,6 +15,7 @@ const services = {
   profileService: require('../dist/profile/profile.service.js').ProfileService,
   raceService: require('../dist/races/race.service.js').RaceService,
   resultService: require('../dist/results/result.service.js').ResultService,
+  statisticsService: require('../dist/statistics/statistics.service.js').StatisticsService,
   triviaService: require('../dist/trivia/trivia.service.js').TriviaService,
 };
 

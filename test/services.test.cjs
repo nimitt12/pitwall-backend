@@ -181,6 +181,29 @@ it('reads trivia in display order', async () => {
   assert.match(queries[0].sql, /ORDER BY/);
 });
 
+it('builds categorized all-time statistics from a fresh database snapshot', async () => {
+  const now = new Date();
+  const { db, queries } = database([
+    { rows: [] },
+    {
+      rows: [
+        { status_id: 1, status: 'Finished', count: 80, fetched_at: now },
+        { status_id: 3, status: 'Accident', count: 12, fetched_at: now },
+        { status_id: 5, status: 'Engine', count: 8, fetched_at: now },
+      ],
+    },
+  ]);
+  const result = await new services.statisticsService(db).getStatuses();
+  assert.equal(result.cacheStatus, 'fresh');
+  assert.equal(result.summary.total, 100);
+  assert.equal(result.summary.classified, 80);
+  assert.equal(result.summary.completionRate, 80);
+  assert.equal(result.statuses.find((row) => row.status === 'Accident').category, 'incident');
+  assert.equal(result.statuses.find((row) => row.status === 'Engine').category, 'mechanical');
+  assert.match(queries[0].sql, /CREATE TABLE IF NOT EXISTS f1_statuses/);
+  assert.match(queries[1].sql, /FROM f1_statuses/);
+});
+
 it('admin CRUD enforces table and column allowlists and hides password hashes', async () => {
   const { db, queries } = database([
     { rows: [{ id: 'u', email: 'a@example.com', password: 'hash' }] },
@@ -330,7 +353,7 @@ it('sync failures roll back instead of committing partial results', async (t) =>
   await assert.rejects(new services.resultService(db).syncResults(), /Upstream unavailable/);
   assert.deepEqual(
     queries.map((q) => q.sql),
-    ['BEGIN', 'ROLLBACK'],
+    ['BEGIN', 'ALTER TABLE results ADD COLUMN IF NOT EXISTS fastest_lap_speed TEXT', 'ROLLBACK'],
   );
 });
 
@@ -398,16 +421,48 @@ it('syncs sprint qualifying from OpenF1 with race mapping and formatted lap time
   ]);
 });
 
-it('caches completed lap-position responses, preserving numeric lap and position values', async (t) => {
+it('caches completed lap timing and pit-stop responses with numeric values', async (t) => {
   let calls = 0;
-  t.mock.method(axios, 'get', async () => {
+  t.mock.method(axios, 'get', async (url) => {
     calls++;
+    if (url.includes('/pitstops/'))
+      return {
+        data: {
+          MRData: {
+            total: '1',
+            RaceTable: {
+              Races: [
+                {
+                  PitStops: [
+                    {
+                      driverId: 'norris',
+                      lap: '20',
+                      stop: '1',
+                      time: '14:12:03',
+                      duration: '22.451',
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+        },
+      };
     return {
       data: {
         MRData: {
           total: '1',
           RaceTable: {
-            Races: [{ Laps: [{ number: '1', Timings: [{ driverId: 'norris', position: '2' }] }] }],
+            Races: [
+              {
+                Laps: [
+                  {
+                    number: '1',
+                    Timings: [{ driverId: 'norris', position: '2', time: '1:28.123' }],
+                  },
+                ],
+              },
+            ],
           },
         },
       },
@@ -418,9 +473,19 @@ it('caches completed lap-position responses, preserving numeric lap and position
     season: '2026',
     round: '3',
     totalLaps: 1,
-    drivers: { norris: [{ lap: 1, position: 2 }] },
+    drivers: { norris: [{ lap: 1, position: 2, time: '1:28.123', timeMs: 88123 }] },
+    pitStops: [
+      {
+        driverId: 'norris',
+        lap: 20,
+        stop: 1,
+        time: '14:12:03',
+        duration: '22.451',
+        durationMs: 22451,
+      },
+    ],
   };
   assert.deepEqual(await service.getLapPositions('2026', '3'), expected);
   assert.deepEqual(await service.getLapPositions('2026', '3'), expected);
-  assert.equal(calls, 1);
+  assert.equal(calls, 2);
 });
