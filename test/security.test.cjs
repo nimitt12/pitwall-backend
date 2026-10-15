@@ -256,6 +256,29 @@ it('rate limits public routes together and prevents spoofed X-Forwarded-For bypa
   assert.ok(res.headers['retry-after']);
   assert.ok(res.headers.ratelimit);
 });
+it('keeps CORS and no-store headers on rate-limit errors and permits preflight', async (t) => {
+  const origin = 'https://www.mypitwall.in';
+  env(t, { CORS_ORIGINS: origin, RATE_LIMIT_PUBLIC: '1' });
+  const { http } = await setup(t);
+  await request(http).get('/health').set('Origin', origin).expect(200);
+  const limited = await request(http).get('/health').set('Origin', origin).expect(429);
+  assert.equal(limited.headers['access-control-allow-origin'], origin);
+  assert.equal(limited.headers['cache-control'], 'no-store');
+  assert.match(limited.headers.vary, /Origin/);
+  assert.ok(limited.headers['retry-after']);
+  const preflight = await request(http)
+    .options('/auth/login')
+    .set('Origin', origin)
+    .set('Access-Control-Request-Method', 'POST')
+    .set('Access-Control-Request-Headers', 'content-type')
+    .expect(204);
+  assert.equal(preflight.headers['access-control-allow-origin'], origin);
+  const denied = await request(http)
+    .get('/health')
+    .set('Origin', 'https://evil.example')
+    .expect(429);
+  assert.equal(denied.headers['access-control-allow-origin'], undefined);
+});
 it('shares the stricter authentication budget across login/register/google routes', async (t) => {
   env(t, { RATE_LIMIT_AUTH: '2' });
   const { http } = await setup(t);
@@ -288,7 +311,7 @@ it('groups IPv6 addresses within a subnet to prevent address-rotation bypass', a
   await request(http).get('/health').set('X-Forwarded-For', '2001:db8:abcd:1200::2').expect(429);
 });
 it('enforces and releases simultaneous SSE connection limits', { timeout: 10000 }, async (t) => {
-  env(t, { SSE_MAX_PER_IP: '1' });
+  env(t, { SSE_MAX_PER_IP: '1', CORS_ORIGINS: 'https://www.mypitwall.in' });
   const { app, http: server } = await setup(t);
   app.get(services.liveTimingService).startSimulation();
   await app.listen(0, '127.0.0.1');
@@ -303,7 +326,12 @@ it('enforces and releases simultaneous SSE connection limits', { timeout: 10000 
     });
   const first = await open();
   t.after(() => first.req.destroy());
-  await request(server).get('/live/stream').expect(503);
+  const rejected = await request(server)
+    .get('/live/stream')
+    .set('Origin', 'https://www.mypitwall.in')
+    .expect(503);
+  assert.equal(rejected.headers['access-control-allow-origin'], 'https://www.mypitwall.in');
+  assert.equal(rejected.headers['cache-control'], 'no-store');
   first.req.destroy();
   for (let i = 0; i < 100 && app.get(services.liveTimingService).getState().subscribers; i++)
     await new Promise((r) => setTimeout(r, 5));

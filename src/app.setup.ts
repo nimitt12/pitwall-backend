@@ -18,14 +18,28 @@ export async function configureApp(app: NestExpressApplication, logRequests = tr
   );
   app.set('query parser', 'simple');
   app.use(helmet({ strictTransportSecurity: production ? undefined : false }));
-  app.use(concurrencyLimit());
-  app.use(...(await app.get(RateLimitService).configure()));
+  // Include early rejections and preflights in response policy and request logs.
+  app.use((_req: Request, res: Response, next: NextFunction) => {
+    res.setHeader('Cache-Control', 'no-store');
+    next();
+  });
+  if (logRequests) {
+    const logger = new Logger('HTTP');
+    app.use((req: Request, res: Response, next: NextFunction) => {
+      res.once('finish', () =>
+        logger.log(`${req.method} ${req.route?.path || '<unmatched>'} ${res.statusCode}`),
+      );
+      next();
+    });
+  }
   app.enableCors({
     origin: origins,
     methods: ['GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Authorization', 'Content-Type'],
     maxAge: 600,
   });
+  app.use(concurrencyLimit());
+  app.use(...(await app.get(RateLimitService).configure()));
   // Limits execute before parsing so oversized/invalid requests also consume budget.
   app.useBodyParser('json', { limit: '32kb' });
   app.use((req: Request, res: Response, next: NextFunction) => {
@@ -38,21 +52,10 @@ export async function configureApp(app: NestExpressApplication, logRequests = tr
       res.status(415).json({ message: 'Content-Type must be application/json' });
       return;
     }
-    // Private responses, including authentication and admin data, must not be cached.
-    res.setHeader('Cache-Control', 'no-store');
     next();
   });
   app.useGlobalPipes(new InputValidationPipe());
   app.useGlobalFilters(new SecurityExceptionFilter());
-  if (logRequests) {
-    const logger = new Logger('HTTP');
-    app.use((req: Request, res: Response, next: NextFunction) => {
-      res.once('finish', () =>
-        logger.log(`${req.method} ${req.route?.path || '<unmatched>'} ${res.statusCode}`),
-      );
-      next();
-    });
-  }
   const config = new DocumentBuilder()
     .setTitle('MyPitWall API Documentation')
     .setVersion('1.0.0')
