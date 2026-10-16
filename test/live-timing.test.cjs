@@ -59,6 +59,7 @@ it('simulates a session, broadcasts timed updates, and cleans up subscribers', (
 
 it('downloads and caches an archive index, preserving error statuses', async (t) => {
   const live = service(t);
+  live.ARCHIVE_PROVIDER = 'formula1';
   live.F1_AUTH_TOKEN = 'archive-token';
   live.STATIC_HEADERS.Authorization = `Bearer ${live.F1_AUTH_TOKEN}`;
   let calls = 0;
@@ -73,6 +74,54 @@ it('downloads and caches an archive index, preserving error statuses', async (t)
   await assert.rejects(live.getArchiveIndex('2017'), (e) => e.status === 404);
   t.mock.method(global, 'fetch', async () => new Response('', { status: 503 }));
   await assert.rejects(live.getArchiveIndex('2019'), (e) => e.status === 502);
+});
+
+it('uses OpenF1 for archive indexes when selected and preserves the frontend contract', async (t) => {
+  const live = service(t);
+  live.ARCHIVE_PROVIDER = 'openf1';
+  live.openF1Archive.lastRequestAt = Number.NEGATIVE_INFINITY;
+  const responses = {
+    meetings: [
+      {
+        meeting_key: 1254,
+        meeting_name: 'Australian Grand Prix',
+        location: 'Melbourne',
+        country_name: 'Australia',
+        country_code: 'AUS',
+      },
+    ],
+    sessions: [
+      {
+        session_key: 9693,
+        meeting_key: 1254,
+        session_name: 'Race',
+        date_start: '2025-03-16T04:00:00Z',
+        is_cancelled: false,
+      },
+    ],
+  };
+  t.mock.method(global, 'fetch', async (url) => {
+    const endpoint = new URL(url).pathname.split('/').at(-1);
+    return new Response(JSON.stringify(responses[endpoint]));
+  });
+  const index = await live.getArchiveIndex('2025');
+  assert.equal(index.Provider, 'openf1');
+  assert.deepEqual(index.Meetings[0].Sessions[0], {
+    Key: 9693,
+    Name: 'Race',
+    Path: '2025/openf1_1254/openf1_9693/',
+  });
+});
+
+it('falls back to OpenF1 when the native archive rejects an auto-provider request', async (t) => {
+  const live = service(t);
+  live.ARCHIVE_PROVIDER = 'auto';
+  live.openF1Archive.lastRequestAt = Number.NEGATIVE_INFINITY;
+  t.mock.method(global, 'fetch', async (url) => {
+    if (String(url).includes('livetiming.formula1.com')) return new Response('', { status: 401 });
+    return new Response('[]');
+  });
+  assert.deepEqual(await live.getArchiveIndex('2025'), { Provider: 'openf1', Meetings: [] });
 });
 
 function archiveFetch(url) {

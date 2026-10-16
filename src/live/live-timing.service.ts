@@ -4,6 +4,7 @@ import { readBoundedText } from '../security/upstream.js';
 import { EventEmitter } from 'node:events';
 import zlib from 'node:zlib';
 import WebSocket from 'ws';
+import { OpenF1Archive } from './openf1-archive.js';
 import type {
   ArchiveLine,
   ArchiveStream,
@@ -20,6 +21,7 @@ import type {
 export class LiveTimingService implements OnModuleDestroy {
   private destroyed = false;
   private readonly abortController = new AbortController();
+  private readonly openF1Archive = new OpenF1Archive(this.abortController.signal);
   private reconnectTimer: NodeJS.Timeout | null = null;
   private pingTimer: NodeJS.Timeout | null = null;
   /**
@@ -1149,6 +1151,8 @@ export class LiveTimingService implements OnModuleDestroy {
   /* ------------------------------------------------------------------ */
   F1_STATIC_BASE = 'https://livetiming.formula1.com/static/';
 
+  ARCHIVE_PROVIDER = String(process.env.F1_ARCHIVE_PROVIDER || 'auto').toLowerCase();
+
   // Same UA the official clients send; some CDN configs reject default agents.
   STATIC_HEADERS = {
     'User-Agent': 'BestHTTP',
@@ -1181,6 +1185,22 @@ export class LiveTimingService implements OnModuleDestroy {
    * Fetch (and cache) a season's session index. Past seasons are immutable so
    * they cache long; the current season refreshes every few minutes.
    */
+  getFormula1ArchiveIndex = async (year: number) => {
+    const res = await fetch(`${this.F1_STATIC_BASE}${year}/Index.json`, {
+      headers: this.STATIC_HEADERS,
+      signal: AbortSignal.any([this.abortController.signal, AbortSignal.timeout(15_000)]),
+      redirect: 'error',
+    });
+    if (!res.ok) {
+      const err: Error & { status?: number } = new Error(
+        `Archive index fetch failed: HTTP ${res.status}`,
+      );
+      err.status = res.status === 404 ? 404 : 502;
+      throw err;
+    }
+    return JSON.parse(this.stripBom(await readBoundedText(res)));
+  };
+
   getArchiveIndex = async (year: string) => {
     const y = Number(year);
     if (!Number.isInteger(y) || y < this.ARCHIVE_FIRST_YEAR || y > new Date().getUTCFullYear()) {
@@ -1193,19 +1213,18 @@ export class LiveTimingService implements OnModuleDestroy {
     const ttl = y === new Date().getUTCFullYear() ? 5 * 60_000 : 6 * 3_600_000;
     const cached = this.archiveCache.get(y);
     if (cached && Date.now() - cached.fetchedAt < ttl) return cached.data;
-    const res = await fetch(`${this.F1_STATIC_BASE}${y}/Index.json`, {
-      headers: this.STATIC_HEADERS,
-      signal: AbortSignal.any([this.abortController.signal, AbortSignal.timeout(15_000)]),
-      redirect: 'error',
-    });
-    if (!res.ok) {
-      const err: Error & { status?: number } = new Error(
-        `Archive index fetch failed: HTTP ${res.status}`,
-      );
-      err.status = res.status === 404 ? 404 : 502;
-      throw err;
+    let data;
+    if (this.ARCHIVE_PROVIDER === 'openf1') {
+      data = await this.openF1Archive.getIndex(y);
+    } else if (this.ARCHIVE_PROVIDER === 'formula1') {
+      data = await this.getFormula1ArchiveIndex(y);
+    } else {
+      try {
+        data = await this.getFormula1ArchiveIndex(y);
+      } catch {
+        data = await this.openF1Archive.getIndex(y);
+      }
     }
-    const data = JSON.parse(this.stripBom(await readBoundedText(res)));
     this.archiveCache.set(y, { data, fetchedAt: Date.now() });
     return data;
   };
@@ -1359,25 +1378,37 @@ export class LiveTimingService implements OnModuleDestroy {
     this.setStatus('connected');
     this.emitReplayProgress();
 
-    const results = await Promise.all(
-      this.TOPICS.map(async (topic) => {
-        try {
-          const res = await fetch(`${this.F1_STATIC_BASE}${path}${topic}.jsonStream`, {
-            headers: this.STATIC_HEADERS,
-            signal: AbortSignal.any([
-              this.abortController.signal,
-              replayAbort.signal,
-              AbortSignal.timeout(15_000),
-            ]),
-            redirect: 'error',
-          });
-          if (!res.ok) return null;
-          return { topic, lines: this.parseStream(await readBoundedText(res)), idx: 0 };
-        } catch {
-          return null; // topic not recorded for this session
-        }
-      }),
-    );
+    const openF1Path = /^\d{4}\/openf1_\d+\/openf1_\d+\/$/.test(path);
+    let results;
+    try {
+      results = openF1Path
+        ? await this.openF1Archive.getStreams(path, replayAbort.signal)
+        : await Promise.all(
+            this.TOPICS.map(async (topic) => {
+              try {
+                const res = await fetch(`${this.F1_STATIC_BASE}${path}${topic}.jsonStream`, {
+                  headers: this.STATIC_HEADERS,
+                  signal: AbortSignal.any([
+                    this.abortController.signal,
+                    replayAbort.signal,
+                    AbortSignal.timeout(15_000),
+                  ]),
+                  redirect: 'error',
+                });
+                if (!res.ok) return null;
+                return { topic, lines: this.parseStream(await readBoundedText(res)), idx: 0 };
+              } catch {
+                return null; // topic not recorded for this session
+              }
+            }),
+          );
+    } catch (error) {
+      if (gen === this.replayGen) {
+        this.releaseReplay();
+        this.setStatus('idle');
+      }
+      throw error;
+    }
     if (gen !== this.replayGen) return this.getState(); // superseded while downloading
 
     const streams = results.filter((s): s is ArchiveStream => !!s && s.lines.length > 0);
@@ -1502,6 +1533,7 @@ export class LiveTimingService implements OnModuleDestroy {
     this.emitter.emit('shutdown');
     this.emitter.removeAllListeners();
     this.archiveCache.clear();
+    this.openF1Archive.clear();
     this.state.subscribers = 0;
     this.state.simulated = false;
     this.state.topics = {};

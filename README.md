@@ -14,23 +14,29 @@ npm run dev
 
 The default port is **8080**. Configuration is loaded from `.env` at startup:
 
-| Variable | Purpose |
-| --- | --- |
-| `PORT` | HTTP port; defaults to 8080 |
-| `PG_USER`, `PG_PASSWORD`, `PG_HOST`, `PG_DATABASE` | PostgreSQL connection |
-| `PG_PORT` | PostgreSQL port; defaults to 5432 |
-| `JWT_SECRET` | Random signing secret; production requires at least 32 characters |
-| `JWT_TTL_SECONDS` | New token lifetime; defaults to one hour |
-| `GOOGLE_CLIENT_ID` | Google ID-token audience |
-| `CORS_ORIGINS` | Exact HTTP or HTTPS browser origins |
-| `REDIS_ENABLED` | Enables shared Redis rate-limit storage; defaults to `false` |
-| `REDIS_URL` | Redis connection URL; required when `REDIS_ENABLED=true` |
-| `TRUST_PROXY` | Actual proxy IPs/CIDRs; unset for direct access |
-| `PG_POOL_MAX` | Per-instance database connections; defaults to 10 |
-| `PG_SSL_CA`, `PG_SSL_CA_FILE` | Optional provider CA override for verified TLS |
-| `F1_LIVETIMING_TOKEN` | Optional F1-issued bearer token used by the live feed and static session archive when upstream authentication is required |
+| Variable                                           | Purpose                                                                                                                   |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `PORT`                                             | HTTP port; defaults to 8080                                                                                               |
+| `PG_USER`, `PG_PASSWORD`, `PG_HOST`, `PG_DATABASE` | PostgreSQL connection                                                                                                     |
+| `PG_PORT`                                          | PostgreSQL port; defaults to 5432                                                                                         |
+| `JWT_SECRET`                                       | Random signing secret; production requires at least 32 characters                                                         |
+| `JWT_TTL_SECONDS`                                  | New token lifetime; defaults to one hour                                                                                  |
+| `GOOGLE_CLIENT_ID`                                 | Google ID-token audience                                                                                                  |
+| `CORS_ORIGINS`                                     | Exact HTTP or HTTPS browser origins                                                                                       |
+| `REDIS_ENABLED`                                    | Enables shared Redis rate-limit storage; defaults to `false`                                                              |
+| `REDIS_URL`                                        | Redis connection URL; required when `REDIS_ENABLED=true`                                                                  |
+| `TRUST_PROXY`                                      | Actual proxy IPs/CIDRs; unset for direct access                                                                           |
+| `PG_POOL_MAX`                                      | Per-instance database connections; defaults to 10                                                                         |
+| `PG_SSL_CA`, `PG_SSL_CA_FILE`                      | Optional provider CA override for verified TLS                                                                            |
+| `F1_LIVETIMING_TOKEN`                              | Optional F1-issued bearer token used by the live feed and static session archive when upstream authentication is required |
+| `F1_ARCHIVE_PROVIDER`                              | Replay archive source: `auto` (default; Formula 1 then OpenF1 fallback), `formula1`, or `openf1`                          |
 
 PostgreSQL now verifies TLS certificates and hostnames. Supabase's official public CA is bundled for Supabase hosts; other providers can supply a CA override. Apply the relevant files in `sql/` before production startup: production request handlers do not create or alter tables. Use a restricted application database role and a separate migration role. See [security and deployment guidance](docs/security.md) for required configuration, limits, and scaling constraints.
+
+OpenF1 archive mode supports completed sessions from 2023 onward and adapts timing,
+positions, intervals, laps, sectors, tyres, pits, weather, race control, and available
+team radio to the existing replay stream. Native Formula 1 mode remains available for
+older seasons and high-frequency car telemetry/track position when authorized.
 
 ## Commands
 
