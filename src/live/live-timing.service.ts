@@ -1150,7 +1150,11 @@ export class LiveTimingService implements OnModuleDestroy {
   F1_STATIC_BASE = 'https://livetiming.formula1.com/static/';
 
   // Same UA the official clients send; some CDN configs reject default agents.
-  STATIC_HEADERS = { 'User-Agent': 'BestHTTP', 'Accept-Encoding': 'gzip' };
+  STATIC_HEADERS = {
+    'User-Agent': 'BestHTTP',
+    'Accept-Encoding': 'gzip',
+    ...(this.F1_AUTH_TOKEN ? { Authorization: `Bearer ${this.F1_AUTH_TOKEN}` } : {}),
+  };
 
   ARCHIVE_FIRST_YEAR = 2018;
 

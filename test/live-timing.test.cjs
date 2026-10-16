@@ -59,9 +59,12 @@ it('simulates a session, broadcasts timed updates, and cleans up subscribers', (
 
 it('downloads and caches an archive index, preserving error statuses', async (t) => {
   const live = service(t);
+  live.F1_AUTH_TOKEN = 'archive-token';
+  live.STATIC_HEADERS.Authorization = `Bearer ${live.F1_AUTH_TOKEN}`;
   let calls = 0;
-  t.mock.method(global, 'fetch', async () => {
+  t.mock.method(global, 'fetch', async (_url, options) => {
     calls++;
+    assert.equal(options.headers.Authorization, 'Bearer archive-token');
     return new Response('\ufeff{"Meetings":[{"Name":"Race"}]}');
   });
   assert.deepEqual(await live.getArchiveIndex('2020'), { Meetings: [{ Name: 'Race' }] });

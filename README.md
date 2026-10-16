@@ -28,7 +28,7 @@ The default port is **8080**. Configuration is loaded from `.env` at startup:
 | `TRUST_PROXY` | Actual proxy IPs/CIDRs; unset for direct access |
 | `PG_POOL_MAX` | Per-instance database connections; defaults to 10 |
 | `PG_SSL_CA`, `PG_SSL_CA_FILE` | Optional provider CA override for verified TLS |
-| `F1_LIVETIMING_TOKEN` | Optional F1 TV token when required by the live feed |
+| `F1_LIVETIMING_TOKEN` | Optional F1-issued bearer token used by the live feed and static session archive when upstream authentication is required |
 
 PostgreSQL now verifies TLS certificates and hostnames. Supabase's official public CA is bundled for Supabase hosts; other providers can supply a CA override. Apply the relevant files in `sql/` before production startup: production request handlers do not create or alter tables. Use a restricted application database role and a separate migration role. See [security and deployment guidance](docs/security.md) for required configuration, limits, and scaling constraints.
 
