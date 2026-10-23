@@ -19,3 +19,8 @@ dist-ssr
 *.sw?
 
 .env
+# Local secrets and TLS private material
+.env.*
+!.env.example
+*.key
+*.p12
