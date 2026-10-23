@@ -1,8 +1,8 @@
 import { Logger } from '@nestjs/common';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import type { NextFunction, Request, Response } from 'express';
-import helmet from 'helmet';
+import type { NextFunction, Request, RequestHandler, Response } from 'express';
+import helmet, { type HelmetOptions } from 'helmet';
 import { concurrencyLimit } from './security/concurrency.js';
 import { validateSecurityConfig } from './security/config.js';
 import { SecurityExceptionFilter } from './security/exception.filter.js';
@@ -17,7 +17,11 @@ export async function configureApp(app: NestExpressApplication, logRequests = tr
     process.env.TRUST_PROXY ? process.env.TRUST_PROXY.split(',').map((v) => v.trim()) : false,
   );
   app.set('query parser', 'simple');
-  app.use(helmet({ strictTransportSecurity: production ? undefined : false }));
+  // Some build tools resolve Helmet through its CommonJS default export.
+  type HelmetFactory = (options?: HelmetOptions) => RequestHandler;
+  const helmetExport = helmet as HelmetFactory | { default: HelmetFactory };
+  const helmetMiddleware = typeof helmetExport === 'function' ? helmetExport : helmetExport.default;
+  app.use(helmetMiddleware({ strictTransportSecurity: production ? undefined : false }));
   // Include early rejections and preflights in response policy and request logs.
   app.use((_req: Request, res: Response, next: NextFunction) => {
     res.setHeader('Cache-Control', 'no-store');
